@@ -1,0 +1,520 @@
+# ============================================================
+# KNOWLEDGE MAP — AI Clinical Programming Project
+# ============================================================
+# Purpose: Before answering a student question, read this file
+# to identify the 1-3 most relevant source files. Then read
+# those files to give a grounded, specific answer.
+#
+# Structure:
+#   topic_category:
+#     question_pattern: [description of questions this covers]
+#     read_these_files:
+#       - path: <relative file path>
+#         contains: <what information is in this file>
+#     do_not_guess: true  # when precision matters, always read the file
+# ============================================================
+
+# ─────────────────────────────────────────────────────────────
+# 1. PROJECT OVERVIEW & ORIENTATION
+# ─────────────────────────────────────────────────────────────
+
+project_overview:
+  what_is_this_project:
+    questions: ["what is this project", "what does this system do", "give me an overview", "what is the goal"]
+    read_these_files:
+      - path: CLAUDE.md
+        contains: Full project overview, architecture, pipeline flow, design principles, multi-study architecture
+      - path: training/README.md
+        contains: Training curriculum overview, chapter list with durations and skill levels
+
+  project_structure:
+    questions: ["what files are where", "project folder structure", "what is in each directory", "where do I find X"]
+    read_these_files:
+      - path: CLAUDE.md
+        contains: Architecture section lists every key directory and file with its role
+      - path: sdtm_ig_db/README.md
+        contains: Structure of the IG database component
+      - path: r_functions/README.md
+        contains: Structure of the R function library
+
+  how_to_run:
+    questions: ["how do I run", "how to start", "run the pipeline", "what command", "getting started"]
+    read_these_files:
+      - path: CLAUDE.md
+        contains: Commands section — all CLI commands with flags and examples
+      - path: verify_setup.py
+        contains: Prerequisite checks — what must be installed and configured before running
+      - path: orchestrator/config.yaml
+        contains: Active configuration — LLM mode, paths, model names
+
+# ─────────────────────────────────────────────────────────────
+# 2. PIPELINE STAGES
+# ─────────────────────────────────────────────────────────────
+
+pipeline_stages:
+  spec_building:
+    questions: ["spec build", "spec builder", "how is the spec created", "draft spec", "mapping specification",
+                "what does the spec builder do", "how are variables mapped"]
+    read_these_files:
+      - path: orchestrator/agents/spec_builder.py
+        contains: Full spec builder logic — raw data profiling, IG queries, decision flag generation
+      - path: orchestrator/core/spec_manager.py
+        contains: How specs are read, written, validated, and versioned (draft → reviewed → approved)
+      - path: training/capstone/guide/capstone_instructor_guide.md
+        contains: Module C.2 explains what the spec builder does in training terms
+    do_not_guess: true
+
+  spec_review:
+    questions: ["spec review", "spec reviewer", "who reviews the spec", "automated review", "IG compliance check"]
+    read_these_files:
+      - path: orchestrator/agents/spec_reviewer.py
+        contains: Spec reviewer logic — completeness checks, CT compliance, derivation review
+      - path: orchestrator/core/spec_manager.py
+        contains: Version states and review comment storage
+
+  human_review:
+    questions: ["human review", "decision gate", "why must a human review", "flagged decisions", "approve the spec",
+                "what decisions does a human make", "why can't AI make the decision"]
+    read_these_files:
+      - path: orchestrator/core/human_review.py
+        contains: The CLI interface for human review — how options are presented, how decisions are recorded
+      - path: orchestrator/core/conventions.py
+        contains: Pre-configured convention decisions — how company/study defaults work
+      - path: training/capstone/guide/capstone_instructor_guide.md
+        contains: Module C.0 challenge table explains WHY human review exists; Module C.2 explains HOW it works
+    do_not_guess: true
+
+  production_programming:
+    questions: ["production programmer", "generate R code", "R script generation", "production stage",
+                "how is R code written", "dm_production.R", "what does production programmer do"]
+    read_these_files:
+      - path: orchestrator/agents/production_programmer.py
+        contains: Production programmer logic — reads spec + registry, generates R, executes Rscript
+      - path: r_functions/function_registry.json
+        contains: The registered R functions agents use — iso_date, derive_age, assign_ct with examples
+      - path: orchestrator/core/function_loader.py
+        contains: How the function registry is loaded and formatted for agent prompts
+    do_not_guess: true
+
+  qc_programming:
+    questions: ["QC programmer", "QC stage", "double programming", "independent QC", "why different model",
+                "Opus vs Sonnet", "dm_qc.R", "what is QC programming"]
+    read_these_files:
+      - path: orchestrator/agents/qc_programmer.py
+        contains: QC programmer logic — independent implementation, model selection rationale
+      - path: training/capstone/guide/capstone_instructor_guide.md
+        contains: Module C.2 explains the QC agent and why Opus is used for independence
+
+  comparison:
+    questions: ["compare", "comparison", "MATCH MISMATCH", "how are datasets compared", "compare report",
+                "dm_compare_report", "comparison loop", "mismatch what happens"]
+    read_these_files:
+      - path: orchestrator/core/compare.py
+        contains: Column-by-column Parquet diff logic, returns (match, report) tuple
+      - path: orchestrator/main.py
+        contains: The comparison loop — up to 5 iterations on mismatch, fed back to production
+    do_not_guess: true
+
+  validation:
+    questions: ["validation", "P21", "p21_report", "define.xml", "XPT", "submission check",
+                "what is validated", "P21 checks", "validation agent"]
+    read_these_files:
+      - path: orchestrator/agents/validation_agent.py
+        contains: P21-style checks, define.xml metadata generation, spec sheet output
+      - path: training/capstone/exercises/exercise_c_2_deliberate_error.md
+        contains: Exercise that demonstrates which stage catches which error type
+    do_not_guess: true
+
+# ─────────────────────────────────────────────────────────────
+# 3. CORE ARCHITECTURE COMPONENTS
+# ─────────────────────────────────────────────────────────────
+
+core_components:
+  state_manager:
+    questions: ["pipeline state", "resume", "--resume flag", "crash recovery", "pipeline_state.json",
+                "how does the pipeline remember where it was", "save state"]
+    read_these_files:
+      - path: orchestrator/core/state.py
+        contains: PipelineState class, phase names, JSON persistence, save/load methods
+
+  llm_client:
+    questions: ["LLM client", "LLM mode", "LIVE DRY_RUN OFF", "template mode", "API key",
+                "how does the pipeline call Claude", "use_llm setting", "without API key"]
+    read_these_files:
+      - path: orchestrator/core/llm_client.py
+        contains: Three modes (LIVE/DRY_RUN/OFF), how agents call the API, template fallback
+      - path: orchestrator/config.yaml
+        contains: Active use_llm setting and model names
+
+  ig_client:
+    questions: ["IG client", "ig_client", "how does the agent query the IG", "SDTM IG lookup",
+                "get_required_variables", "file-based RAG", "IG content files"]
+    read_these_files:
+      - path: orchestrator/core/ig_client.py
+        contains: IGClient class, get_required_variables(), get_domain_variables(), search logic
+      - path: sdtm_ig_db/sdtm_ig_content/dm_domain.md
+        contains: DM domain IG content — variable definitions, codelists, rules (this IS the source)
+      - path: sdtm_ig_db/sdtm_ig_content/general_assumptions.md
+        contains: SDTM general assumptions that apply to all domains
+    do_not_guess: true
+
+  memory_system:
+    questions: ["memory", "memory manager", "decisions log", "pitfalls", "coding standards enforcement",
+                "how do agents remember", "persistent memory", "why do agents forget", "memory system"]
+    read_these_files:
+      - path: orchestrator/core/memory_manager.py
+        contains: Full MemoryManager API — record_decision, record_pitfall, get_coding_standards, cross-domain context
+      - path: standards/memory/program_header_template.txt
+        contains: The R program header template populated at each run
+      - path: standards/coding_standards.yaml
+        contains: Company-level coding rules injected into every agent prompt
+      - path: training/chapter_7_memory_system/guide/chapter_7_instructor_guide.md
+        contains: Teaching guide for the memory system — explains each component with demos
+    do_not_guess: true
+
+  config_system:
+    questions: ["config", "how is config loaded", "multi-study config", "config.yaml", "layered config",
+                "standards vs study config", "config resolver"]
+    read_these_files:
+      - path: orchestrator/core/config_resolver.py
+        contains: How standards/config.base.yaml is deep-merged with studies/{study}/config.yaml
+      - path: orchestrator/config.yaml
+        contains: The active config (single-study mode)
+      - path: standards/config.base.yaml
+        contains: Company-level defaults that all studies inherit
+
+  function_registry:
+    questions: ["function registry", "function_registry.json", "iso_date", "derive_age", "assign_ct",
+                "registered R functions", "function loader", "how does the agent know which R functions to use"]
+    read_these_files:
+      - path: r_functions/function_registry.json
+        contains: Machine-readable catalog — function name, when_to_use, parameters, usage examples
+      - path: orchestrator/core/function_loader.py
+        contains: FunctionLoader class, get_dependency_order(), format_for_prompt()
+      - path: r_functions/iso_date.R
+        contains: iso_date() R function implementation
+      - path: r_functions/derive_age.R
+        contains: derive_age() R function implementation
+      - path: r_functions/assign_ct.R
+        contains: assign_ct() R function implementation
+    do_not_guess: true
+
+# ─────────────────────────────────────────────────────────────
+# 4. R FUNCTIONS
+# ─────────────────────────────────────────────────────────────
+
+r_functions:
+  iso_date:
+    questions: ["iso_date", "date conversion", "ISO 8601", "messy dates", "date format", "BRTHDTC",
+                "how to convert dates", "partial dates", "date imputation"]
+    read_these_files:
+      - path: r_functions/iso_date.R
+        contains: Full implementation — handles MM/DD/YYYY, DD/MM/YYYY, partial dates, infmt parameter
+      - path: r_functions/function_registry.json
+        contains: Registry entry for iso_date — when_to_use, parameters, usage examples
+
+  derive_age:
+    questions: ["derive_age", "AGE calculation", "AGEU", "age from dates", "birth date",
+                "how is age calculated", "BRTHDTC to AGE"]
+    read_these_files:
+      - path: r_functions/derive_age.R
+        contains: Full implementation — calculates age from birth date + reference date, returns AGE + AGEU
+      - path: r_functions/function_registry.json
+        contains: Registry entry for derive_age
+
+  assign_ct:
+    questions: ["assign_ct", "CT mapping", "controlled terminology", "codelist lookup",
+                "how are raw values mapped to CDISC", "ct_lookup.csv", "extensible codelist"]
+    read_these_files:
+      - path: r_functions/assign_ct.R
+        contains: Full implementation — reads ct_lookup.csv, matches raw values to CDISC CT values
+      - path: macros/ct_lookup.csv
+        contains: The lookup table — raw values, CDISC values, codelist codes for SEX/RACE/ETHNICITY/COUNTRY
+      - path: r_functions/function_registry.json
+        contains: Registry entry for assign_ct — codelist codes and examples
+    do_not_guess: true
+
+# ─────────────────────────────────────────────────────────────
+# 5. SDTM / CLINICAL DOMAIN KNOWLEDGE
+# ─────────────────────────────────────────────────────────────
+
+sdtm_domain:
+  dm_domain_variables:
+    questions: ["DM domain", "DM variables", "what variables are in DM", "demographics domain",
+                "STUDYID USUBJID BRTHDTC", "required DM variables", "RFSTDTC RFENDTC"]
+    read_these_files:
+      - path: sdtm_ig_db/sdtm_ig_content/dm_domain.md
+        contains: All DM variable definitions, rules, codelist assignments, required vs expected vs permissible
+      - path: sdtm_ig_db/sdtm_ig_content/general_assumptions.md
+        contains: General SDTM rules that apply to DM and all domains
+    do_not_guess: true
+
+  controlled_terminology:
+    questions: ["codelist", "CDISC CT", "C66731 C74457 C66790 C71113", "SEX values", "RACE values",
+                "ETHNICITY values", "what values are allowed", "NCI EVS", "extensible vs non-extensible"]
+    read_these_files:
+      - path: macros/ct_lookup.csv
+        contains: Hand-curated CT values for 4 DM codelists with raw value synonyms
+      - path: sdtm_ig_db/sdtm_ig_content/dm_domain.md
+        contains: Which codelist applies to each variable (e.g., SEX=C66731, RACE=C74457)
+      - path: training/chapter_4_rest_api/guide/chapter_4_instructor_guide.md
+        contains: Explains NCI EVS REST API, extensible vs non-extensible, CT matching pipeline
+    do_not_guess: true
+
+  race_handling:
+    questions: ["RACE", "other specify", "RACE mapping", "SUPPDM", "race options A B C",
+                "how to handle race other", "race codelist C74457"]
+    read_these_files:
+      - path: sdtm_ig_db/sdtm_ig_content/dm_domain.md
+        contains: RACE variable definition and Other Specify handling approaches
+      - path: training/capstone/exercises/exercise_c_1_trace_variable.md
+        contains: Step-by-step guide to tracing RACE through every pipeline stage
+
+# ─────────────────────────────────────────────────────────────
+# 6. TRAINING CHAPTERS
+# ─────────────────────────────────────────────────────────────
+
+training_chapters:
+  chapter_1_notebooklm:
+    questions: ["chapter 1", "NotebookLM", "source grounding", "upload documents to AI",
+                "how to use NotebookLM", "audio overview", "citations in AI answers"]
+    read_these_files:
+      - path: training/chapter_1_notebooklm/guide/chapter_1_instructor_guide.md
+        contains: Full teaching guide — features, clinical use cases, limitations, exercise facilitation
+
+  chapter_2_claude_code:
+    questions: ["chapter 2", "Claude Code", "Cursor", "CLAUDE.md", "skills slash commands",
+                "MCP tools", "hooks", "how to use Claude Code", "AI coding assistant"]
+    read_these_files:
+      - path: training/chapter_2_cli_tools/guide/chapter_2_instructor_guide.md
+        contains: Full teaching guide — Claude Code architecture, Cursor features, NotebookLM MCP
+
+  chapter_2b_function_library:
+    questions: ["chapter 2B", "function library", "make functions discoverable", "function registry pattern",
+                "SAS macros as registry", "AI-discoverable functions"]
+    read_these_files:
+      - path: training/chapter_2b_function_library/guide/chapter_2b_instructor_guide.md
+        contains: Full teaching guide — registry pattern, FunctionLoader, SAS macro parallel
+
+  chapter_3_rag:
+    questions: ["chapter 3", "RAG", "retrieval augmented generation", "build a RAG system",
+                "how to search IG", "chunking strategy", "file-based vs database RAG",
+                "semantic search", "keyword search", "IGClient"]
+    read_these_files:
+      - path: training/chapter_3_rag/guide/chapter_3_instructor_guide.md
+        contains: Full teaching guide — RAG fundamentals, chunking, IGClient API, database mode
+
+  chapter_4_rest_api:
+    questions: ["chapter 4", "REST API", "NCI EVS", "CDISC controlled terminology API",
+                "query codelist", "live CT values", "extensible codelist API"]
+    read_these_files:
+      - path: training/chapter_4_rest_api/guide/chapter_4_instructor_guide.md
+        contains: Full teaching guide — NCI EVS endpoints, extensibility, CT matching pipeline
+
+  chapter_5_package_management:
+    questions: ["chapter 5", "package management", "approved packages", "enterprise package registry",
+                "PackageManager", "package compliance", "context7 vs enterprise"]
+    read_these_files:
+      - path: training/chapter_5_package_management/guide/chapter_5_instructor_guide.md
+        contains: Full teaching guide — registry JSON structure, enforcement layers, Context7 comparison
+
+  chapter_6_vibe_coding:
+    questions: ["chapter 6", "vibe coding", "plan mode", "prompting patterns", "AI directed development",
+                "how to prompt AI", "build custom agent", "build custom skill", "TLF search tool",
+                "debugging with AI", "agent teams"]
+    read_these_files:
+      - path: training/chapter_6_vibe_coding/guide/chapter_6_instructor_guide.md
+        contains: Full teaching guide — plan mode, 5 prompting patterns, debugging, agent/skill architecture, TLF demo
+
+  chapter_7_memory_system:
+    questions: ["chapter 7", "agent memory", "why agents forget", "coding standards enforcement",
+                "decision records", "pitfall records", "cross-domain memory", "pitfall promotion"]
+    read_these_files:
+      - path: training/chapter_7_memory_system/guide/chapter_7_instructor_guide.md
+        contains: Full teaching guide — all 5 memory modules, demos, discussion questions
+
+# ─────────────────────────────────────────────────────────────
+# 7. CAPSTONE
+# ─────────────────────────────────────────────────────────────
+
+capstone:
+  overview:
+    questions: ["capstone", "what is the capstone", "capstone overview", "what is the final project",
+                "how does everything connect", "run the full pipeline"]
+    read_these_files:
+      - path: training/capstone/guide/capstone_instructor_guide.md
+        contains: Full capstone guide — Module C.0 (challenges), C.1 (chapter connections), C.2 (architecture), C.3 (pipeline run), C.4 (exercises)
+      - path: training/index.html
+        contains: Visual guide — challenge table, pipeline diagram, chapter connection map, exercise cards
+
+  exercise_c1_trace_variable:
+    questions: ["exercise C1", "trace RACE", "trace variable", "variable traceability",
+                "follow a variable through the pipeline", "end-to-end traceability"]
+    read_these_files:
+      - path: training/capstone/exercises/exercise_c_1_trace_variable.md
+        contains: Step-by-step instructions to trace RACE through all 8 pipeline stages
+
+  exercise_c2_deliberate_error:
+    questions: ["exercise C2", "deliberate error", "introduce an error", "which stage catches the error",
+                "wrong codelist", "how does the pipeline detect mistakes"]
+    read_these_files:
+      - path: training/capstone/exercises/exercise_c_2_deliberate_error.md
+        contains: Instructions to change SEX codelist, re-run stages, identify where error is caught
+
+  exercise_c3_add_variable:
+    questions: ["exercise C3", "add DTHFL", "add a variable", "extend the spec", "spec-driven architecture",
+                "change spec and regenerate code", "add death flag"]
+    read_these_files:
+      - path: training/capstone/exercises/exercise_c_3_add_variable.md
+        contains: Instructions to add DTHFL to the spec JSON and observe automatic code regeneration
+
+  exercise_c4_ae_extension:
+    questions: ["exercise C4", "AE domain", "adverse events", "extend to new domain", "AE extension design",
+                "MedDRA", "AEDECOD", "domain-generic architecture", "how to add a new domain"]
+    read_these_files:
+      - path: training/capstone/exercises/exercise_c_4_ae_extension.md
+        contains: Design exercise — AE variable mappings, reusable vs new components, cross-domain dependency graph
+      - path: sdtm_ig_db/sdtm_ig_content/dm_domain.md
+        contains: DM domain as reference for what domain-generic means
+
+  capstone_deliverables:
+    questions: ["what do I need to submit", "deliverables", "checklist", "what should I have by end",
+                "self assessment", "am I done"]
+    read_these_files:
+      - path: training/capstone/handouts/deliverables_checklist.md
+        contains: Complete checklist — pipeline run checkboxes, exercise completion, self-assessment by skill + chapter
+
+# ─────────────────────────────────────────────────────────────
+# 8. CLAUDE CODE AGENTS AND SKILLS
+# ─────────────────────────────────────────────────────────────
+
+claude_tools:
+  available_skills:
+    questions: ["what skills are available", "slash commands", "what can I type /", "available commands",
+                "what skills does Claude Code have"]
+    read_these_files:
+      - path: .claude/skills/run-pipeline/SKILL.md
+        contains: How to run the pipeline from Claude Code
+      - path: .claude/skills/trace-variable/SKILL.md
+        contains: How to trace any variable through all pipeline stages
+      - path: .claude/skills/capstone-checklist/SKILL.md
+        contains: How to check capstone progress
+      - path: .claude/skills/explain-pipeline/SKILL.md
+        contains: How to get an explanation of any stage or file
+      - path: .claude/skills/check-environment/SKILL.md
+        contains: How to verify all prerequisites
+
+  available_agents:
+    questions: ["what agents are available", "capstone mentor", "what personas can Claude use",
+                "QC programmer agent", "production programmer agent", "biostatistician agent"]
+    read_these_files:
+      - path: .claude/agents/capstone-mentor/AGENT.md
+        contains: Training mentor — answers why questions, gives exercise hints, connects code to chapters
+      - path: .claude/agents/production-programmer/AGENT.md
+        contains: Production programming persona — generates R code following spec
+      - path: .claude/agents/qc-programmer/AGENT.md
+        contains: QC programming persona — independent review mindset
+
+  mcp_tools:
+    questions: ["MCP tools", "MCP server", "sdtm_variable_lookup", "ct_lookup tool",
+                "profile_raw_data", "what MCP tools exist"]
+    read_these_files:
+      - path: mcp_server.py
+        contains: All 8 MCP tool definitions — sdtm_variable_lookup, ct_lookup, profile_raw_data, query_function_registry, read_spec, pipeline_status, comparison_summary, validation_summary
+      - path: .claude/mcp.json
+        contains: MCP server configuration for Claude Code
+
+# ─────────────────────────────────────────────────────────────
+# 9. MULTI-STUDY ARCHITECTURE
+# ─────────────────────────────────────────────────────────────
+
+multi_study:
+  standards_vs_study:
+    questions: ["multi-study", "standards with exceptions", "company standards", "study override",
+                "what is the difference between standards and studies", "layered architecture"]
+    read_these_files:
+      - path: CLAUDE.md
+        contains: Multi-Study Architecture section — full explanation with directory structure diagram
+      - path: standards/config.base.yaml
+        contains: Company-level defaults — models, paths, comparison settings
+      - path: studies/XYZ_2026_001/config.yaml
+        contains: Study-specific overrides — only what differs from the standard
+
+  new_study_setup:
+    questions: ["how to set up a new study", "create new study", "new study template",
+                "studies/_template", "what does the new-study skill do"]
+    read_these_files:
+      - path: .claude/skills/new-study/SKILL.md
+        contains: Step-by-step instructions for scaffolding a new study from the template
+      - path: studies/_template/config.yaml
+        contains: Template config with placeholders to fill in
+
+# ─────────────────────────────────────────────────────────────
+# 10. DEBUGGING AND TROUBLESHOOTING
+# ─────────────────────────────────────────────────────────────
+
+troubleshooting:
+  pipeline_failures:
+    questions: ["pipeline failed", "error when running", "Rscript failed", "spec review failed",
+                "comparison mismatch how to fix", "pipeline stopped", "how to debug"]
+    read_these_files:
+      - path: orchestrator/main.py
+        contains: Error gates — where the pipeline stops and why, --force and --resume flags
+      - path: training/instructor/common_issues.md
+        contains: Known common issues and their solutions for training participants
+      - path: verify_setup.py
+        contains: All prerequisite checks — run this first when something doesn't work
+
+  r_script_errors:
+    questions: ["R error", "Rscript error", "arrow package", "haven package", "library not found",
+                "R script won't run", "install R packages"]
+    read_these_files:
+      - path: orchestrator/requirements.txt
+        contains: Python package requirements
+      - path: r_functions/packages.txt
+        contains: R package requirements (arrow, haven)
+      - path: training/instructor/common_issues.md
+        contains: Common R setup issues and fixes
+
+  environment_setup:
+    questions: ["prerequisites", "install", "setup", "Python version", "R version",
+                "do I have everything installed", "check environment"]
+    read_these_files:
+      - path: verify_setup.py
+        contains: Complete prerequisite verification — Python, R, packages, config, data files
+      - path: .claude/skills/check-environment/SKILL.md
+        contains: How to run the environment check via Claude Code
+
+# ─────────────────────────────────────────────────────────────
+# 11. OUTPUT FILES
+# ─────────────────────────────────────────────────────────────
+
+output_files:
+  what_files_are_generated:
+    questions: ["what files does the pipeline produce", "output files", "where are the results",
+                "dm.parquet", "dm.xpt", "p21_report", "define_metadata", "compare_report"]
+    read_these_files:
+      - path: training/capstone/guide/capstone_instructor_guide.md
+        contains: Module C.3 "Examine All Artifacts" table — every output file with description
+      - path: training/capstone/handouts/deliverables_checklist.md
+        contains: Pipeline Run checklist — which files indicate each stage completed
+
+  spec_files:
+    questions: ["mapping spec", "spec JSON", "dm_mapping_spec.json", "approved spec", "spec structure",
+                "what is in the spec file", "spec format"]
+    read_these_files:
+      - path: orchestrator/outputs/specs/dm_mapping_spec.json
+        contains: Actual generated draft spec — real example of the spec structure
+      - path: orchestrator/outputs/specs/dm_mapping_spec_approved.json
+        contains: Actual approved spec — shows human decisions recorded
+      - path: orchestrator/core/spec_manager.py
+        contains: Spec schema and validation logic
+    do_not_guess: true
+
+  pipeline_state:
+    questions: ["pipeline state", "pipeline_state.json", "what stage am I on", "pipeline status"]
+    read_these_files:
+      - path: orchestrator/core/state.py
+        contains: State schema — all phase names, how state is saved/loaded
+      - path: studies/XYZ_2026_001/sdtm/pipeline_state.json
+        contains: Actual current pipeline state (if pipeline has been run)
