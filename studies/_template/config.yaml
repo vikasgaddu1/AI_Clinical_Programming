@@ -1,0 +1,51 @@
+# Study-specific configuration
+#
+# Only include settings that DIFFER from standards/config.base.yaml.
+# All other settings are inherited from the company defaults.
+#
+# Replace __PLACEHOLDERS__ with actual values for your study.
+
+study:
+  study_id: "__STUDY_ID__"
+  domain: "__DOMAIN__"
+
+# ------------------------------------------------------------------
+# Input paths (relative to project root)
+# ------------------------------------------------------------------
+paths:
+  raw_data: "./studies/__STUDY_DIR__/raw_data/__RAW_DATA_FILE__"
+  annotated_crf: "./studies/__STUDY_DIR__/documents/crf/__CRF_FILE__"
+  protocol: "./studies/__STUDY_DIR__/documents/protocol/__PROTOCOL_FILE__"
+  sap: "./studies/__STUDY_DIR__/documents/sap/__SAP_FILE__"
+
+# ------------------------------------------------------------------
+# Output paths (relative to the study directory)
+#
+# These map the orchestrator's output stages to the study's directory
+# structure. Production and QC have separate program/dataset folders.
+# ADaM and TLG paths are for future expansion.
+# ------------------------------------------------------------------
+output_paths:
+  # SDTM deliverables (active — used by the orchestrator)
+  specs: "./sdtm/specs"
+  production_programs: "./sdtm/production/programs"
+  production_datasets: "./sdtm/production/datasets"
+  qc_programs: "./sdtm/qc/programs"
+  qc_datasets: "./sdtm/qc/datasets"
+  compare: "./sdtm/qc/compare"
+  validation: "./sdtm/validation"
+
+  # ADaM deliverables (future expansion)
+  # adam_specs: "./adam/specs"
+  # adam_production_programs: "./adam/production/programs"
+  # adam_production_datasets: "./adam/production/datasets"
+  # adam_qc_programs: "./adam/qc/programs"
+  # adam_qc_datasets: "./adam/qc/datasets"
+  # adam_validation: "./adam/validation"
+
+  # TLG deliverables (future expansion)
+  # tlg_specs: "./tlg/specs"
+  # tlg_production_programs: "./tlg/production/programs"
+  # tlg_production_outputs: "./tlg/production/outputs"
+  # tlg_qc_programs: "./tlg/qc/programs"
+  # tlg_qc_outputs: "./tlg/qc/outputs"

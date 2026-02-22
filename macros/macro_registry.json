@@ -1,0 +1,473 @@
+{
+  "registry_version": "1.0",
+  "registry_date": "2026-02-16",
+  "description": "SAS Macro Library for SDTM Clinical Programming",
+  "library_path": "/sessions/affectionate-awesome-johnson/mnt/AI_Clinical_Programming/macros",
+  "macros": [
+    {
+      "name": "%iso_date",
+      "file": "iso_date.sas",
+      "category": "Date Handling",
+      "purpose": "Convert non-standard date values to ISO 8601 format (YYYY-MM-DD)",
+      "when_to_use": [
+        "Whenever a raw date variable needs to be converted to SDTM-compliant ISO 8601 format (YYYY-MM-DD)",
+        "Use this instead of writing custom date conversion code",
+        "Apply to birth dates, event dates, and any SDTM date variables requiring standardization",
+        "Automatically detects common date formats to minimize user specification"
+      ],
+      "parameters": [
+        {
+          "name": "inds",
+          "type": "dataset name",
+          "required": true,
+          "description": "Input dataset name containing the raw date variable",
+          "example": "raw.dm"
+        },
+        {
+          "name": "outds",
+          "type": "dataset name",
+          "required": true,
+          "description": "Output dataset name with the ISO 8601 formatted date",
+          "example": "work.dm_iso"
+        },
+        {
+          "name": "invar",
+          "type": "variable name",
+          "required": true,
+          "description": "Input variable name containing the date string to convert",
+          "example": "BRTHDT"
+        },
+        {
+          "name": "outvar",
+          "type": "variable name",
+          "required": true,
+          "description": "Output variable name for the ISO date (character, YYYY-MM-DD format)",
+          "example": "BRTHDTC"
+        },
+        {
+          "name": "infmt",
+          "type": "SAS format",
+          "required": false,
+          "default": "(auto-detect)",
+          "description": "Specific input format for parsing. If blank, macro auto-detects from: DD-MON-YYYY, MM/DD/YYYY, DD/MM/YYYY, DDMONYYYY, YYYY-MM-DD",
+          "example": "DDMMYYYY10."
+        }
+      ],
+      "supported_input_formats": [
+        "DD-MON-YYYY (e.g., 01-JAN-2020)",
+        "MM/DD/YYYY (e.g., 01/12/2020)",
+        "DD/MM/YYYY (e.g., 01/12/2020 when first part > 12)",
+        "DDMONYYYY (e.g., 01JAN2020)",
+        "YYYY-MM-DD (e.g., 2020-01-01, already ISO)"
+      ],
+      "output_type": "Character variable in YYYY-MM-DD format",
+      "output_length": 10,
+      "output_characteristics": [
+        "Character variable",
+        "Fixed length of 10 characters",
+        "ISO 8601 compliant (YYYY-MM-DD)",
+        "SDTM-compliant date/datetime variable suffix",
+        "Missing input values produce missing output values"
+      ],
+      "dependencies": [],
+      "usage_examples": [
+        {
+          "description": "Convert birth date with auto-format detection",
+          "code": "%iso_date(inds=raw.dm, outds=work.dm_iso, invar=BRTHDT, outvar=BRTHDTC);"
+        },
+        {
+          "description": "Convert reference start date with explicit format",
+          "code": "%iso_date(inds=raw.dm, outds=work.dm_iso, invar=RFSTDTC, outvar=RFSTDTC, infmt=DDMMYYYY10.);"
+        },
+        {
+          "description": "Convert visit date in MM/DD/YYYY format",
+          "code": "%iso_date(inds=raw.vs, outds=work.vs_iso, invar=VISIT_DATE, outvar=VSDTC, infmt=MMDDYYYY10.);"
+        }
+      ],
+      "error_handling": [
+        "Missing required parameters trigger ERROR in SAS log and macro stops",
+        "Invalid dates are set to missing and WARNING logged",
+        "Leading/trailing spaces handled automatically with STRIP function",
+        "Non-parseable values result in missing output and WARNING in log"
+      ],
+      "notes": [
+        "Output is always character in YYYY-MM-DD format per SDTM requirements",
+        "Missing input values result in missing output values",
+        "Invalid dates are set to missing and logged to the SAS log",
+        "The macro handles leading/trailing spaces automatically",
+        "Temporary variables (_input_val, _date_num, _parts) are dropped from output",
+        "For ambiguous dates (e.g., 01/02/2020), DD/MM/YYYY is assumed unless first part > 12"
+      ]
+    },
+    {
+      "name": "%derive_age",
+      "file": "derive_age.sas",
+      "category": "Demographic Derivations",
+      "purpose": "Calculate age in years from birth date and reference date",
+      "when_to_use": [
+        "Derive AGE variable from BRTHDTC and reference date in SDTM Demographics (DM) domain",
+        "Calculate age at study start (using RFSTDTC as reference date)",
+        "Calculate age at specific visit dates if needed for analysis",
+        "Required for SDTM DM domain population",
+        "Use whenever demographics need age in completed years"
+      ],
+      "parameters": [
+        {
+          "name": "inds",
+          "type": "dataset name",
+          "required": true,
+          "description": "Input dataset name containing birth and reference dates",
+          "example": "work.dm"
+        },
+        {
+          "name": "outds",
+          "type": "dataset name",
+          "required": true,
+          "description": "Output dataset name with derived age variable",
+          "example": "work.dm_age"
+        },
+        {
+          "name": "brthdt",
+          "type": "variable name",
+          "required": true,
+          "description": "Birth date variable (ISO format YYYY-MM-DD, character or numeric SAS date)",
+          "example": "BRTHDTC"
+        },
+        {
+          "name": "refdt",
+          "type": "variable name",
+          "required": true,
+          "description": "Reference date variable (ISO format YYYY-MM-DD, character or numeric SAS date)",
+          "example": "RFSTDTC"
+        },
+        {
+          "name": "agevar",
+          "type": "variable name",
+          "required": false,
+          "default": "AGE",
+          "description": "Output variable name for age in years (numeric)",
+          "example": "AGE"
+        },
+        {
+          "name": "ageuvar",
+          "type": "variable name",
+          "required": false,
+          "default": "AGEU",
+          "description": "Output variable name for age unit (created with value 'YEARS')",
+          "example": "AGEU"
+        },
+        {
+          "name": "create_ageu",
+          "type": "flag (Y/N)",
+          "required": false,
+          "default": "Y",
+          "description": "Whether to create AGEU (age unit) variable with value 'YEARS'",
+          "example": "Y"
+        }
+      ],
+      "output_type": "Numeric variable (age in years) and Character variable (age unit)",
+      "output_characteristics": [
+        "Age variable: Numeric, value in completed years",
+        "Age unit variable: Character, value='YEARS' (created if create_ageu=Y)",
+        "Missing dates result in missing age",
+        "Uses YRDIF function for accurate age calculation"
+      ],
+      "dependencies": [
+        "Requires birth date to be in ISO format or numeric SAS date",
+        "Requires reference date to be in ISO format or numeric SAS date",
+        "Birth date must be on or before reference date"
+      ],
+      "usage_examples": [
+        {
+          "description": "Basic age derivation from birth and reference start date",
+          "code": "%derive_age(inds=work.dm, outds=work.dm_age, brthdt=BRTHDTC, refdt=RFSTDTC, agevar=AGE);"
+        },
+        {
+          "description": "Age derivation with explicit unit variable",
+          "code": "%derive_age(inds=work.dm, outds=work.dm_age, brthdt=BRTHDTC, refdt=RFSTDTC, agevar=AGE, ageuvar=AGEU, create_ageu=Y);"
+        },
+        {
+          "description": "Age derivation without creating unit variable",
+          "code": "%derive_age(inds=work.dm, outds=work.dm_age, brthdt=BRTHDTC, refdt=RFSTDTC, agevar=AGE, create_ageu=N);"
+        }
+      ],
+      "error_handling": [
+        "Missing required parameters (inds, outds, brthdt, refdt) trigger ERROR and stop macro",
+        "Birth date after reference date sets age to missing with WARNING",
+        "Missing birth or reference date sets age to missing (no error)",
+        "Non-convertible date strings set age to missing"
+      ],
+      "notes": [
+        "Age is calculated in completed years using YRDIF function with 'ACTUAL' basis",
+        "Output age is numeric",
+        "Birth date after reference date (invalid condition) results in missing age",
+        "The macro handles both character (ISO) and numeric SAS date input",
+        "AGEU variable is set to 'YEARS' for non-missing age values",
+        "Temporary variables (_brthdt_num, _refdt_num) are dropped from output",
+        "Typically used in SDTM Demographics (DM) domain for AGE and AGEU derivation"
+      ]
+    },
+    {
+      "name": "%assign_ct",
+      "file": "assign_ct.sas",
+      "category": "Controlled Terminology Mapping",
+      "purpose": "Map raw data values to CDISC Controlled Terminology (CT) standards",
+      "when_to_use": [
+        "Map raw categorical values to CDISC CT values for SDTM compliance",
+        "Apply to SEX, RACE, ETHNICITY, COUNTRY, and other CT-controlled variables",
+        "Handle different raw value formats (abbreviated, full text, numeric codes)",
+        "Account for case variations and common alternative terms",
+        "Identify and manage unmapped values with configurable actions"
+      ],
+      "parameters": [
+        {
+          "name": "inds",
+          "type": "dataset name",
+          "required": true,
+          "description": "Input dataset name containing raw categorical values",
+          "example": "work.dm"
+        },
+        {
+          "name": "outds",
+          "type": "dataset name",
+          "required": true,
+          "description": "Output dataset name with CT-mapped values",
+          "example": "work.dm_ct"
+        },
+        {
+          "name": "invar",
+          "type": "variable name",
+          "required": true,
+          "description": "Input variable with raw categorical values (character or numeric)",
+          "example": "SEX_RAW"
+        },
+        {
+          "name": "outvar",
+          "type": "variable name",
+          "required": true,
+          "description": "Output variable with CT-mapped values (character)",
+          "example": "SEX"
+        },
+        {
+          "name": "codelist",
+          "type": "string (NCI codelist code)",
+          "required": true,
+          "description": "CT codelist code identifying the terminology mapping (e.g., C66731 for SEX, C74457 for RACE)",
+          "example": "C66731"
+        },
+        {
+          "name": "ctpath",
+          "type": "file path",
+          "required": false,
+          "default": "./ct_lookup.csv",
+          "description": "Path to CT lookup CSV file with columns: CODELIST, RAW_VALUE, CT_VALUE",
+          "example": "/path/to/ct_lookup.csv"
+        },
+        {
+          "name": "unmapped",
+          "type": "option (KEEP|MISSING|FLAG)",
+          "required": false,
+          "default": "FLAG",
+          "description": "Action for unmapped values: KEEP (keep raw value), MISSING (set to missing), FLAG (log warning and keep raw value)",
+          "example": "FLAG"
+        },
+        {
+          "name": "case_insensitive",
+          "type": "flag (Y/N)",
+          "required": false,
+          "default": "Y",
+          "description": "Perform case-insensitive comparison when matching raw values to CT lookup",
+          "example": "Y"
+        }
+      ],
+      "supported_codelists": [
+        {
+          "code": "C66731",
+          "name": "SEX",
+          "mapped_values": ["M", "F", "U"],
+          "raw_value_examples": ["M", "MALE", "1", "F", "FEMALE", "2", "U", "UNKNOWN", "UNDIFFERENTIATED"]
+        },
+        {
+          "code": "C74457",
+          "name": "RACE",
+          "mapped_values": ["WHITE", "BLACK OR AFRICAN AMERICAN", "ASIAN", "AMERICAN INDIAN OR ALASKA NATIVE", "NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER", "OTHER", "MULTIPLE"],
+          "raw_value_examples": ["WHITE", "W", "CAUCASIAN", "BLACK", "AFRICAN AMERICAN", "ASIAN", "AMERICAN INDIAN", "NATIVE HAWAIIAN", "PACIFIC ISLANDER", "OTHER", "MULTI", "MULTIPLE"]
+        },
+        {
+          "code": "C66790",
+          "name": "ETHNICITY",
+          "mapped_values": ["HISPANIC OR LATINO", "NOT HISPANIC OR LATINO", "NOT REPORTED", "UNKNOWN"],
+          "raw_value_examples": ["HISPANIC", "LATINO", "H", "NOT HISPANIC", "NON-HISPANIC", "NH", "NOT REPORTED", "UNKNOWN", "PREFER NOT TO SAY"]
+        },
+        {
+          "code": "C71113",
+          "name": "COUNTRY",
+          "mapped_values": ["USA", "CANADA", "UNITED KINGDOM", "MEXICO"],
+          "raw_value_examples": ["USA", "UNITED STATES", "US", "CANADA", "CAN", "UNITED KINGDOM", "UK", "MEXICO", "MEX"]
+        }
+      ],
+      "output_type": "Character variable with standardized CT values",
+      "output_characteristics": [
+        "Output is always character variable",
+        "Values match CDISC Controlled Terminology standards",
+        "Missing input values produce missing output values",
+        "Unmapped values handled per unmapped parameter"
+      ],
+      "dependencies": [
+        "Requires ct_lookup.csv file with CT mappings",
+        "CSV file must contain CODELIST, RAW_VALUE, CT_VALUE columns",
+        "Requested codelist code must exist in lookup file"
+      ],
+      "lookup_file_structure": {
+        "filename": "ct_lookup.csv",
+        "columns": [
+          {
+            "name": "CODELIST",
+            "description": "NCI codelist code (e.g., C66731)"
+          },
+          {
+            "name": "CODELIST_NAME",
+            "description": "Readable name of codelist (e.g., SEX)"
+          },
+          {
+            "name": "RAW_VALUE",
+            "description": "Raw value as it appears in source data"
+          },
+          {
+            "name": "CT_VALUE",
+            "description": "CDISC-standardized CT value for mapping"
+          },
+          {
+            "name": "DESCRIPTION",
+            "description": "Optional description of the mapping"
+          }
+        ]
+      },
+      "usage_examples": [
+        {
+          "description": "Map SEX raw values to CT with auto-detected unmapped handling",
+          "code": "%assign_ct(inds=work.dm, outds=work.dm_ct, invar=SEX_RAW, outvar=SEX, codelist=C66731, ctpath=/path/to/ct_lookup.csv);"
+        },
+        {
+          "description": "Map RACE with unmapped values set to missing",
+          "code": "%assign_ct(inds=work.dm, outds=work.dm_ct, invar=RACE_RAW, outvar=RACE, codelist=C74457, unmapped=MISSING);"
+        },
+        {
+          "description": "Map ETHNICITY keeping unmapped values as raw",
+          "code": "%assign_ct(inds=work.dm, outds=work.dm_ct, invar=ETHNIC_RAW, outvar=ETHNIC, codelist=C66790, unmapped=KEEP);"
+        },
+        {
+          "description": "Case-sensitive mapping for COUNTRY",
+          "code": "%assign_ct(inds=work.dm, outds=work.dm_ct, invar=COUNTRY_RAW, outvar=COUNTRY, codelist=C71113, case_insensitive=N);"
+        }
+      ],
+      "error_handling": [
+        "Missing required parameters (inds, outds, invar, outvar, codelist) trigger ERROR and stop macro",
+        "Non-existent CT lookup file triggers ERROR and stops macro",
+        "Codelist code not found in lookup file generates WARNING but processing continues",
+        "Unmapped values handled according to unmapped parameter: KEEP (with warning), MISSING (with warning), or FLAG (with warning)"
+      ],
+      "notes": [
+        "CT lookup file should be a CSV with columns: CODELIST, RAW_VALUE, CT_VALUE",
+        "Output variable is always character",
+        "Case-insensitive comparison by default (set case_insensitive=N for case-sensitive)",
+        "Multiple raw values can map to the same CT value (many-to-one mapping)",
+        "Temporary datasets (_ct_lookup, _ct_lookup_subset) are created and deleted",
+        "Missing input values result in missing output values",
+        "Includes provided ct_lookup.csv with common SDTM mappings",
+        "Uses PROC SQL for efficient left join merge with CT lookup"
+      ]
+    }
+  ],
+  "orchestrator_integration": {
+    "registry_format": "JSON",
+    "how_to_use": [
+      "AI Orchestrator reads this JSON registry to discover available macros",
+      "Each macro entry includes all necessary metadata for orchestrator decision-making",
+      "Orchestrator uses 'when_to_use' to determine which macros to apply",
+      "Orchestrator uses 'parameters' to understand required inputs and outputs",
+      "Orchestrator uses 'dependencies' to sequence macro calls correctly",
+      "Orchestrator uses 'usage_examples' for reference in generating macro calls"
+    ],
+    "decision_logic": {
+      "step_1_discovery": "Read macro_registry.json to identify available macros",
+      "step_2_selection": "Based on source dataset variables, select macros that apply",
+      "step_3_sequencing": "Order macros respecting dependencies (e.g., %iso_date before %derive_age)",
+      "step_4_parametrization": "Extract required/optional parameters from registry",
+      "step_5_generation": "Generate SAS code calling selected macros with appropriate parameters",
+      "step_6_execution": "Execute generated SAS code with error checking"
+    },
+    "example_orchestration_scenario": {
+      "description": "Transform raw DM domain to SDTM",
+      "source_variables": ["RAW_SEX", "RAW_RACE", "RAW_BRTHDT", "RAW_RFSTDTC"],
+      "required_steps": [
+        {
+          "step": 1,
+          "macro": "%iso_date",
+          "reason": "Birth date must be converted to ISO 8601 before age derivation",
+          "parameters": {
+            "inds": "raw.dm",
+            "outds": "work.dm_dates",
+            "invar": "RAW_BRTHDT",
+            "outvar": "BRTHDTC"
+          }
+        },
+        {
+          "step": 2,
+          "macro": "%iso_date",
+          "reason": "Reference start date must be converted to ISO 8601 for age calculation",
+          "parameters": {
+            "inds": "work.dm_dates",
+            "outds": "work.dm_dates",
+            "invar": "RAW_RFSTDTC",
+            "outvar": "RFSTDTC"
+          }
+        },
+        {
+          "step": 3,
+          "macro": "%derive_age",
+          "reason": "AGE derived from birth and reference dates",
+          "parameters": {
+            "inds": "work.dm_dates",
+            "outds": "work.dm_derived",
+            "brthdt": "BRTHDTC",
+            "refdt": "RFSTDTC",
+            "agevar": "AGE"
+          }
+        },
+        {
+          "step": 4,
+          "macro": "%assign_ct",
+          "reason": "SEX mapped to CDISC CT",
+          "parameters": {
+            "inds": "work.dm_derived",
+            "outds": "work.dm_sdtm",
+            "invar": "RAW_SEX",
+            "outvar": "SEX",
+            "codelist": "C66731"
+          }
+        },
+        {
+          "step": 5,
+          "macro": "%assign_ct",
+          "reason": "RACE mapped to CDISC CT",
+          "parameters": {
+            "inds": "work.dm_sdtm",
+            "outds": "work.dm_sdtm",
+            "invar": "RAW_RACE",
+            "outvar": "RACE",
+            "codelist": "C74457"
+          }
+        }
+      ]
+    }
+  },
+  "version_history": [
+    {
+      "version": "1.0",
+      "date": "2026-02-16",
+      "author": "AI Clinical Programming",
+      "changes": "Initial release with %iso_date, %derive_age, and %assign_ct macros"
+    }
+  ]
+}

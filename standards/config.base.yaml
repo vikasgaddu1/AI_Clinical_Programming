@@ -1,0 +1,45 @@
+# Company-level defaults — override per-study in studies/{study}/config.yaml
+#
+# This file contains settings shared across all studies.
+# Study-specific config files only need to include settings that DIFFER.
+
+agents:
+  use_llm: false
+  dry_run: false
+  spec_builder:
+    model: "claude-sonnet-4-20250514"
+    max_tokens: 8000
+  spec_reviewer:
+    model: "claude-opus-4-20250514"
+    max_tokens: 4000
+  production_programmer:
+    model: "claude-sonnet-4-20250514"
+    max_tokens: 8000
+  qc_programmer:
+    model: "claude-opus-4-20250514"
+    max_tokens: 8000
+  validation_agent:
+    model: "claude-sonnet-4-20250514"
+    max_tokens: 4000
+
+comparison:
+  max_iterations: 5
+  method: "exact"
+
+database:
+  host: "localhost"
+  port: 5432
+  name: "sdtm_ig_rag"
+  user: "sdtm_user"
+
+r:
+  rscript_path: "Rscript"
+  output_format: "parquet"
+  write_xpt: true
+
+# Standard shared resource paths (relative to project root)
+# These are used when studies don't override them.
+paths:
+  function_registry: "./r_functions/function_registry.json"
+  function_library: "./r_functions/"
+  ct_lookup: "./macros/ct_lookup.csv"

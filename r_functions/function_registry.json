@@ -1,0 +1,112 @@
+{
+  "registry_version": "1.0",
+  "registry_date": "2026-02-18",
+  "description": "R function library for SDTM clinical programming (replaces SAS macro library)",
+  "library_path": "r_functions",
+  "language": "R",
+  "functions": [
+    {
+      "name": "iso_date",
+      "file": "iso_date.R",
+      "category": "Date Handling",
+      "purpose": "Convert non-standard date values to ISO 8601 format (YYYY-MM-DD)",
+      "when_to_use": [
+        "Whenever a raw date variable needs to be converted to SDTM-compliant ISO 8601 format (YYYY-MM-DD)",
+        "Use this instead of writing custom date conversion code",
+        "Apply to birth dates, event dates, and any SDTM date variables requiring standardization",
+        "Automatically detects common date formats to minimize user specification"
+      ],
+      "parameters": [
+        {"name": "data", "type": "data frame", "required": true, "description": "Input data frame containing the raw date variable", "example": "raw_dm"},
+        {"name": "invar", "type": "character", "required": true, "description": "Name of input variable containing the date string", "example": "BRTHDT"},
+        {"name": "outvar", "type": "character", "required": true, "description": "Name of output variable for the ISO date (character, YYYY-MM-DD)", "example": "BRTHDTC"},
+        {"name": "infmt", "type": "character", "required": false, "default": "NULL", "description": "Optional format hint: DD-MON-YYYY, MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD; NULL for auto-detect", "example": "NULL"}
+      ],
+      "supported_input_formats": ["DD-MON-YYYY (e.g. 01-JAN-2020)", "MM/DD/YYYY", "DD/MM/YYYY", "DDMONYYYY", "YYYY-MM-DD (already ISO)"],
+      "output_type": "Character variable in YYYY-MM-DD format",
+      "output_length": 10,
+      "dependencies": [],
+      "usage_examples": [
+        {"description": "Convert birth date with auto-format detection", "code": "dm <- iso_date(dm, invar = \"BRTHDT\", outvar = \"BRTHDTC\")"},
+        {"description": "Convert reference start date", "code": "dm <- iso_date(dm, invar = \"RFSTDTC\", outvar = \"RFSTDTC\")"},
+        {"description": "Convert with explicit format hint", "code": "dm <- iso_date(dm, invar = \"VISIT_DATE\", outvar = \"VSDTC\", infmt = \"DD/MM/YYYY\")"}
+      ],
+      "notes": ["Output is always character YYYY-MM-DD per SDTM", "Missing input produces NA in output", "Invalid dates produce NA", "AMBIGUITY: Slash dates with both parts <= 12 (e.g. 03/04/2020) default to MM/DD/YYYY — use infmt='DD/MM/YYYY' for non-US data"]
+    },
+    {
+      "name": "derive_age",
+      "file": "derive_age.R",
+      "category": "Demographic Derivations",
+      "purpose": "Calculate age in years from birth date and reference date",
+      "when_to_use": [
+        "Derive AGE variable from BRTHDTC and reference date in SDTM DM domain",
+        "Calculate age at study start (using RFSTDTC as reference date)",
+        "Required for SDTM DM domain population"
+      ],
+      "parameters": [
+        {"name": "data", "type": "data frame", "required": true, "description": "Input data frame with birth and reference dates", "example": "dm"},
+        {"name": "brthdt", "type": "character", "required": true, "description": "Birth date variable name (ISO YYYY-MM-DD)", "example": "BRTHDTC"},
+        {"name": "refdt", "type": "character", "required": true, "description": "Reference date variable name (ISO YYYY-MM-DD)", "example": "RFSTDTC"},
+        {"name": "agevar", "type": "character", "required": false, "default": "AGE", "description": "Output variable name for age in years", "example": "AGE"},
+        {"name": "ageuvar", "type": "character", "required": false, "default": "AGEU", "description": "Output variable name for age unit", "example": "AGEU"},
+        {"name": "create_ageu", "type": "logical", "required": false, "default": true, "description": "Whether to create AGEU with value YEARS", "example": true}
+      ],
+      "output_type": "Numeric (age in completed years) and optional character (AGEU = YEARS)",
+      "dependencies": ["Requires birth and reference dates in ISO format (from iso_date)"],
+      "usage_examples": [
+        {"description": "Basic age derivation", "code": "dm <- derive_age(dm, brthdt = \"BRTHDTC\", refdt = \"RFSTDTC\")"},
+        {"description": "With explicit AGE/AGEU names", "code": "dm <- derive_age(dm, brthdt = \"BRTHDTC\", refdt = \"RFSTDTC\", agevar = \"AGE\", ageuvar = \"AGEU\", create_ageu = TRUE)"}
+      ],
+      "notes": ["Age in completed years", "Birth date after reference date yields NA", "Missing dates yield NA for age"]
+    },
+    {
+      "name": "assign_ct",
+      "file": "assign_ct.R",
+      "category": "Controlled Terminology Mapping",
+      "purpose": "Map raw data values to CDISC Controlled Terminology",
+      "when_to_use": [
+        "Map raw categorical values to CDISC CT for SDTM compliance",
+        "Apply to SEX, RACE, ETHNICITY, COUNTRY and other CT-controlled variables",
+        "Handle different raw value formats; case-insensitive by default"
+      ],
+      "parameters": [
+        {"name": "data", "type": "data frame", "required": true, "description": "Input data frame with raw categorical values", "example": "dm"},
+        {"name": "invar", "type": "character", "required": true, "description": "Input variable name with raw values", "example": "SEX"},
+        {"name": "outvar", "type": "character", "required": true, "description": "Output variable name for CT-mapped values", "example": "SEX"},
+        {"name": "codelist", "type": "character", "required": true, "description": "CT codelist code (e.g. C66731 for SEX, C74457 for RACE)", "example": "C66731"},
+        {"name": "ctpath", "type": "character", "required": false, "default": "path to ct_lookup.csv", "description": "Path to CT lookup CSV (CODELIST, RAW_VALUE, CT_VALUE)", "example": "macros/ct_lookup.csv"},
+        {"name": "unmapped", "type": "character", "required": false, "default": "FLAG", "description": "Action for unmapped: KEEP, MISSING, or FLAG", "example": "FLAG"},
+        {"name": "case_insensitive", "type": "logical", "required": false, "default": true, "description": "Case-insensitive match", "example": true}
+      ],
+      "supported_codelists": [
+        {"code": "C66731", "name": "SEX", "mapped_values": ["M", "F", "U"]},
+        {"code": "C74457", "name": "RACE", "mapped_values": ["WHITE", "BLACK OR AFRICAN AMERICAN", "ASIAN", "AMERICAN INDIAN OR ALASKA NATIVE", "NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER", "OTHER", "MULTIPLE"]},
+        {"code": "C66790", "name": "ETHNICITY", "mapped_values": ["HISPANIC OR LATINO", "NOT HISPANIC OR LATINO", "NOT REPORTED", "UNKNOWN"]},
+        {"code": "C71113", "name": "COUNTRY", "mapped_values": ["USA", "CANADA", "UNITED KINGDOM", "MEXICO"]}
+      ],
+      "lookup_file_structure": {"filename": "ct_lookup.csv", "columns": ["CODELIST", "CODELIST_NAME", "RAW_VALUE", "CT_VALUE", "DESCRIPTION"]},
+      "dependencies": ["Requires ct_lookup.csv (e.g. macros/ct_lookup.csv)"],
+      "usage_examples": [
+        {"description": "Map SEX to CT", "code": "dm <- assign_ct(dm, invar = \"SEX\", outvar = \"SEX\", codelist = \"C66731\", ctpath = \"macros/ct_lookup.csv\")"},
+        {"description": "Map RACE with unmapped set to missing", "code": "dm <- assign_ct(dm, invar = \"RACE\", outvar = \"RACE\", codelist = \"C74457\", unmapped = \"MISSING\", ctpath = \"macros/ct_lookup.csv\")"},
+        {"description": "Map ETHNICITY", "code": "dm <- assign_ct(dm, invar = \"ETHNIC\", outvar = \"ETHNIC\", codelist = \"C66790\", ctpath = \"macros/ct_lookup.csv\")"}
+      ],
+      "notes": ["Output is character", "Missing input yields missing output", "Unmapped handled per unmapped parameter"]
+    }
+  ],
+  "orchestrator_integration": {
+    "how_to_use": [
+      "Orchestrator reads this JSON to discover available R functions",
+      "Use when_to_use to select which functions to apply",
+      "Use parameters and usage_examples to generate correct R code",
+      "Order: iso_date (dates) -> derive_age -> assign_ct (SEX, RACE, ETHNIC, etc.)"
+    ],
+    "example_sequence": [
+      {"step": 1, "function": "iso_date", "reason": "Birth date to ISO before age derivation", "call": "dm <- iso_date(dm, invar = \"BRTHDT\", outvar = \"BRTHDTC\")"},
+      {"step": 2, "function": "iso_date", "reason": "Reference start date to ISO", "call": "dm <- iso_date(dm, invar = \"RFSTDTC\", outvar = \"RFSTDTC\")"},
+      {"step": 3, "function": "derive_age", "reason": "AGE from BRTHDTC and RFSTDTC", "call": "dm <- derive_age(dm, brthdt = \"BRTHDTC\", refdt = \"RFSTDTC\")"},
+      {"step": 4, "function": "assign_ct", "reason": "SEX to CDISC CT", "call": "dm <- assign_ct(dm, invar = \"SEX\", outvar = \"SEX\", codelist = \"C66731\", ctpath = ct_path)"},
+      {"step": 5, "function": "assign_ct", "reason": "RACE to CDISC CT", "call": "dm <- assign_ct(dm, invar = \"RACE\", outvar = \"RACE\", codelist = \"C74457\", ctpath = ct_path)"}
+    ]
+  }
+}

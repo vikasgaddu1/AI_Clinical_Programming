@@ -1,0 +1,27 @@
+# XYZ-2026-001: Phase III Type 2 Diabetes Study (DM Domain)
+#
+# Study-specific overrides. All other settings inherited from
+# standards/config.base.yaml.
+
+study:
+  study_id: "XYZ-2026-001"
+  domain: "DM"
+
+# Input paths — this study's data is still in root study_data/ for
+# backward compatibility. New studies should place data in their own
+# raw_data/ and documents/ directories.
+paths:
+  raw_data: "./study_data/raw_dm.csv"
+  annotated_crf: "./study_data/annotated_crf_dm.csv"
+  protocol: "./study_data/protocol_excerpt_dm.pdf"
+  sap: "./study_data/sap_excerpt_dm.pdf"
+
+# Output paths — maps to the comprehensive study directory structure
+output_paths:
+  specs: "./sdtm/specs"
+  production_programs: "./sdtm/production/programs"
+  production_datasets: "./sdtm/production/datasets"
+  qc_programs: "./sdtm/qc/programs"
+  qc_datasets: "./sdtm/qc/datasets"
+  compare: "./sdtm/qc/compare"
+  validation: "./sdtm/validation"

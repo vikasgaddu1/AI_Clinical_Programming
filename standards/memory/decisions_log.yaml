@@ -1,0 +1,22 @@
+# Cross-study decision patterns
+#
+# Aggregated view of decisions made across studies.
+# Used to identify recurring patterns and inform conventions.
+# Entries are added when a decision pattern appears in 2+ studies.
+
+patterns: []
+
+# Example entry:
+# - variable: "RACE"
+#   most_common_choice: "B"
+#   frequency:
+#     A: 1
+#     B: 4
+#     C: 0
+#   studies:
+#     - study: "XYZ_2026_001"
+#       choice: "B"
+#       rationale: "Phase III multi-site study: conservative approach"
+#     - study: "ABC_2026_002"
+#       choice: "B"
+#       rationale: "Sponsor SOP requires SUPPDM approach"

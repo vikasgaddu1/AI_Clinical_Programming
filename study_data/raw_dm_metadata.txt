@@ -1,0 +1,228 @@
+
+================================================================================
+SAS7BDAT METADATA SPECIFICATION
+Raw DM Dataset with Messy Race/Ethnicity Data
+================================================================================
+
+DATASET INFORMATION:
+  Dataset Name: RAW_DM
+  Library: WORK (or permanent location as configured)
+  Source: /sessions/affectionate-awesome-johnson/mnt/AI_Clinical_Programming/study_data/raw_dm.csv
+  Creation Date: 2026-02-16
+  Observations: 300
+  Variables: 16
+
+VARIABLE DEFINITIONS:
+
+  STUDYID (Character, Length=20)
+    Label: Study Identifier
+    Format: $20.
+    Purpose: Unique study identifier per protocol
+    
+  SITEID (Character, Length=10)
+    Label: Site Identifier
+    Format: $10.
+    Purpose: Clinical research site identifier
+    
+  SUBJID (Character, Length=10)
+    Label: Subject Identifier for Study
+    Format: $10.
+    Purpose: Site-assigned subject number
+    
+  BRTHDT (Character, Length=10)
+    Label: Birth Date
+    Format: $10. (or DATE9. if converted)
+    Purpose: Subject's date of birth
+    
+  RFSTDTC (Character, Length=19)
+    Label: Reference Start Date/Time
+    Format: $19. (ISO 8601 format)
+    Purpose: Study reference start date/time
+    
+  SEX (Character, Length=1)
+    Label: Sex
+    Format: $1.
+    Valid Values: M (Male), F (Female)
+    Purpose: Subject's biological sex
+    
+  RACE (Character, Length=50)
+    Label: Race (CDISC Standard Terminology)
+    Format: $50.
+    Valid Values per CDISC CT:
+      - WHITE
+      - BLACK OR AFRICAN AMERICAN
+      - ASIAN
+      - NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER
+      - AMERICAN INDIAN OR ALASKA NATIVE
+      - MULTIPLE
+      - OTHER
+    Data Quality Note: This dataset contains ~29 subjects with non-standard
+                      race codes to demonstrate messy real-world data
+    
+  RACEOTH (Character, Length=255)
+    Label: Race Other Specify (Free-text)
+    Format: $255.
+    Purpose: Free-text field for non-standard race entries or clarification
+    Data Quality: ~29 subjects populated with various messy entries
+    Contains Examples:
+      - "Filipino" - single race, non-standard coding
+      - "Middle Eastern" - geographic/ethnic descriptor, no direct CT term
+      - "Mixed - White and Asian" - mixed race entry
+      - "Pacific Islander" - generic term needing standardization
+      - "Hispanic" - ethnicity (not race) - data entry error
+      - "Biracial" - indicates MULTIPLE but unspecified
+      - "Prefer not to say" - subject refusal
+      - "Arab" - ethnic/geographic descriptor without CT mapping
+      
+  RACEO (Character, Length=255)
+    Label: Race Other (Alternative Variable Name)
+    Format: $255.
+    Purpose: Alternative site-specific variable name for race specification
+    Note: Some sites use RACEO instead of RACEOTH
+    Population: ~15 subjects
+    
+  ETHNIC (Character, Length=50)
+    Label: Ethnicity
+    Format: $50.
+    Valid Values per CDISC CT:
+      - HISPANIC OR LATINO
+      - NOT HISPANIC OR LATINO
+      - NOT REPORTED
+      - UNKNOWN
+    Purpose: Ethnicity classification separate from race
+    
+  AGE (Numeric)
+    Label: Age
+    Format: 3.
+    Purpose: Subject's age in years at study start
+    Range: Typically 18-85 for adult studies
+    
+  AGEU (Character, Length=5)
+    Label: Age Units
+    Format: $5.
+    Valid Values: YEARS
+    Purpose: Units for AGE variable (always YEARS per SDTM)
+    
+  ARMCD (Character, Length=20)
+    Label: Planned Arm Code
+    Format: $20.
+    Purpose: Coded value for planned treatment arm
+    
+  ARM (Character, Length=50)
+    Label: Planned Arm
+    Format: $50.
+    Purpose: Descriptive name of planned treatment arm
+    
+  COUNTRY (Character, Length=20)
+    Label: Country
+    Format: $20.
+    Purpose: Country of site location / subject enrollment
+    
+  INVNAM (Character, Length=50)
+    Label: Investigator Name
+    Format: $50.
+    Purpose: Name of site investigator/principal investigator
+
+================================================================================
+DATA QUALITY ISSUES AND STANDARDIZATION APPROACH
+================================================================================
+
+This dataset demonstrates typical real-world race/ethnicity data quality issues
+encountered in clinical trial data entry and how to standardize for SDTM submission.
+
+ISSUES IDENTIFIED:
+
+1. Messy Race Coding (~29 subjects affected)
+   - Issue: Non-standard codes like "Other", "OTHER", "other", "5"
+   - Impact: Cannot be analyzed consistently
+   - Solution: Standardize per one of three approaches (see below)
+
+2. Free-text Race Specifications (RACEOTH)
+   - Entries like "Filipino", "Middle Eastern", "Mixed - White and Asian"
+   - Some have clear CDISC CT mappings (Filipino → ASIAN)
+   - Some are ambiguous (Middle Eastern, North African)
+   - Some indicate mixed-race (should be RACE=MULTIPLE)
+   - Some are data entry errors (Hispanic = ethnicity, not race)
+
+3. Missing Standardization
+   - "Prefer not to say" → Should RACE be missing? How to handle?
+   - "Unknown mix" → Insufficient data for proper classification
+   - "Jamaican", "Creole" → Complex ancestry, unclear race classification
+
+STANDARDIZATION APPROACHES PROVIDED:
+
+APPROACH 1: Map to Closest CDISC CT Term
+  - Pros: Clean standardized values, meets regulatory expectations
+  - Cons: May lose original intent, requires subject matter judgment
+  - Examples: "Filipino" → ASIAN, "Vietnamese" → ASIAN
+  - Use Case: Most common in production SDTM datasets
+
+APPROACH 2: Use OTHER + RACEOTH (Preserve Free-text)
+  - Pros: Maintains data fidelity and auditability
+  - Cons: Inconsistent RACE values, harder to analyze
+  - Examples: RACE=OTHER, RACEOTH="Middle Eastern"
+  - Use Case: Unusual/unmappable entries, audit trail preservation
+
+APPROACH 3: Use MULTIPLE for Mixed-Race
+  - Pros: Appropriate per CDISC, represents demographic reality
+  - Cons: Limited analytical value for MULTIPLE category
+  - Examples: "Mixed - White and Asian" → RACE=MULTIPLE, RACEOTH="WHITE; ASIAN"
+  - Use Case: Explicitly mixed-race or biracial subjects
+
+RECOMMENDED IMPLEMENTATION (Hybrid):
+  1. Unambiguous → Approach 1 (map to CT term)
+  2. Explicitly mixed → Approach 3 (MULTIPLE + RACEOTH)
+  3. Ambiguous/unmappable → Approach 2 (OTHER + RACEOTH)
+  4. Data errors → Flag for CRF review/correction
+
+MAPPING SPECIFICATION (CURRENT DATASET):
+
+Subject 0: RACE=Other → ASIAN, RACEOTH="Filipino"
+Subject 1: RACE=OTHER → OTHER, RACEOTH="Middle Eastern" (no CT mapping)
+Subject 2: RACE=other → MULTIPLE, RACEOTH="WHITE; ASIAN" (mixed race)
+Subject 3: RACE=5 → NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER, RACEOTH=''
+Subject 4: RACE=Other → FLAG for review (Hispanic is ethnicity)
+Subject 5: RACE=OTHER → OTHER, RACEOTH="North African" (ambiguous)
+Subject 6: RACE=other → ASIAN, RACEOTH="South Asian Indian"
+Subject 7: RACE=5 → MULTIPLE, RACEOTH="[unspecified]" (biracial)
+Subject 8: RACE=Other → Missing (Prefer not to say)
+Subject 9: RACE=OTHER → OTHER, RACEOTH="Arab"
+Subject 10: RACE=other → ASIAN, RACEOTH="Vietnamese"
+...
+[Additional mappings per recommendations in script output]
+
+QC VALIDATION STEPS:
+  1. Run frequency of RACE values → verify no unexpected codes
+  2. Check MULTIPLE subjects have RACEOTH populated → audit trail
+  3. Review OTHER subjects for appropriateness → spot check
+  4. Cross-reference with ETHNIC field for consistency
+  5. Flag subjects with RACE=missing for review
+  6. Prepare mapping specification document for regulatory submission
+
+================================================================================
+CONVERTING THIS FILE TO SAS7BDAT
+================================================================================
+
+Option 1: Using SAS (Recommended for production)
+  PROC IMPORT DATAFILE="raw_dm.csv"
+      OUT=work.raw_dm
+      DBMS=CSV
+      REPLACE;
+  RUN;
+
+  PROC COPY IN=work OUT=sasuser;
+      SELECT raw_dm;
+  RUN;
+
+Option 2: Using Python (with proper library)
+  import pandas as pd
+  df = pd.read_csv('raw_dm.csv')
+  # Use appropriate SAS writing library
+  df.to_sas('raw_dm.sas7bdat')
+
+Option 3: Online conversion tools
+  - Use SAS OnDemand for Academics
+  - Use commercial data conversion utilities
+  - Use cloud SAS platforms
+
+================================================================================

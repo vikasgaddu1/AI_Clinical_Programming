@@ -1,0 +1,101 @@
+---
+description: Training-aware context for the AI Clinical Programming project. Applied when working with files in this project to ensure Cursor understands the educational context, project structure, and learning objectives.
+globs: ["**/*.py", "**/*.R", "**/*.json", "**/*.yaml", "**/*.md"]
+alwaysApply: true
+---
+
+# AI Clinical Programming — Training Context
+
+This project is a **training demonstration** for clinical programmers learning to use AI tools for SDTM programming. It is NOT a production system. It is designed to be explored, broken, and understood.
+
+## What This Project Is
+
+A multi-agent orchestrator that automates SDTM (Study Data Tabulation Model) programming for clinical trials. It takes raw clinical data through spec building, human review, production/QC programming, comparison, and validation.
+
+**Working example:** DM (Demographics) domain, fictitious Phase III study XYZ-2026-001.
+
+## The Learning Journey
+
+Participants work through 7 chapters before reaching the capstone:
+
+| Chapter | What You Learned | Where It Lives in This Project |
+|---------|-----------------|-------------------------------|
+| Ch.1: NotebookLM | Source grounding — AI answers from YOUR documents | `orchestrator/core/ig_client.py` (same principle, programmatic) |
+| Ch.2: Claude Code | Skills, MCP tools, hooks architecture | `.claude/skills/`, `mcp_server.py`, `.claude/settings.local.json` |
+| Ch.2B: Function Library | Make R functions AI-discoverable via registry | `r_functions/function_registry.json`, `orchestrator/core/function_loader.py` |
+| Ch.3: RAG System | Build retrieval over IG markdown files | `sdtm_ig_db/sdtm_ig_content/*.md`, `orchestrator/core/ig_client.py` |
+| Ch.4: REST API | Query live CDISC controlled terminology | `macros/ct_lookup.csv`, NCI EVS API in `spec_builder.py` |
+| Ch.5: Package Management | Enforce approved packages in AI-generated code | `standards/coding_standards.yaml`, R script `library()` calls |
+| Ch.6: Vibe Coding | Build agents and skills, plan-mode development | `.claude/agents/*/AGENT.md`, pipeline architecture |
+| Ch.7: Memory System | Persistent decisions, pitfalls, coding standards | `orchestrator/core/memory_manager.py`, `standards/memory/` |
+| Capstone | All of the above, running together | Everything in `orchestrator/` |
+
+## When Opening Unfamiliar Files
+
+If you open a file and aren't sure what it does or where it fits, use these Claude Code skills:
+
+- `/explain-pipeline <filename>` — explains the file's role and which chapter it connects to
+- `/trace-variable RACE DM` — traces a variable through the entire pipeline
+- `/capstone-checklist` — shows your current progress through the capstone exercises
+
+## Key Design Principles (Don't Change These)
+
+1. **The mapping spec is the single source of truth.** It drives R code, QC, validation, and define.xml. If you change the spec, re-run production.
+2. **Human review is mandatory and not optional.** The pipeline stops at `human_review` and waits for a human decision.
+3. **Production uses Sonnet; QC uses Opus.** This is intentional — different models = genuine independence.
+4. **Agents read the function registry before writing any R code.** Never write custom date/age/CT logic when iso_date/derive_age/assign_ct exists.
+5. **All R code in lowercase. SDTM variables in UPPERCASE. Local variables in snake_case.**
+
+## Project Structure Quick Reference
+
+```
+orchestrator/
+  main.py              — entry point (run with: python orchestrator/main.py --domain DM)
+  agents/              — 5 agents: spec_builder, spec_reviewer, production_programmer, qc_programmer, validation_agent
+  core/                — ig_client, spec_manager, function_loader, llm_client, compare, memory_manager
+  config.yaml          — main config (LLM mode, paths, models)
+
+r_functions/           — validated R functions + registry JSON
+sdtm_ig_db/            — SDTM IG content in markdown + optional vector DB
+study_data/            — raw data, protocol, SAP (fictitious Phase III T2DM study)
+standards/             — company-level conventions, coding standards, memory
+studies/XYZ_2026_001/  — study-specific overrides
+.claude/               — skills, agents, MCP config (Claude Code)
+training/              — 7 chapters + capstone (what participants are working through)
+```
+
+## Running the Pipeline
+
+```bash
+# Full pipeline
+python orchestrator/main.py --domain DM
+
+# Single stage
+python orchestrator/main.py --domain DM --stage spec_build
+
+# Multi-study mode
+python orchestrator/main.py --study XYZ_2026_001 --domain DM
+
+# Resume after crash
+python orchestrator/main.py --domain DM --resume
+
+# Skip a failed spec review
+python orchestrator/main.py --domain DM --force
+```
+
+## Training Skills Available in Claude Code
+
+| Skill | What it does |
+|-------|-------------|
+| `/check-environment` | Verify prerequisites before running |
+| `/run-pipeline [stage]` | Run the full pipeline or a single stage |
+| `/trace-variable VARNAME [DOMAIN]` | Trace a variable end-to-end through all artifacts |
+| `/capstone-checklist` | Check capstone exercise progress |
+| `/explain-pipeline <stage_or_file>` | Explain any component and its chapter connection |
+| `/validate-dataset` | Run P21-style checks on a dataset |
+| `/profile-data` | Profile raw data for a domain |
+| `/review-spec` | Interactive spec review |
+
+## Important Note for Training Participants
+
+If something is confusing, that's expected. The point is to explore, ask questions, and understand how the pieces fit together. Use the `capstone-mentor` agent in Claude Code for hints on exercises — it explains without giving away the answers.

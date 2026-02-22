@@ -1,0 +1,25 @@
+# Company-level default decisions
+#
+# These conventions are applied during human review as defaults.
+# The reviewer sees each decision and can accept (Enter) or override.
+# Studies can override any of these in studies/{study}/conventions.yaml.
+
+decisions:
+  RACE:
+    approach: "B"
+    rationale: "Company default: All Other Specify values -> RACE='OTHER' + SUPPDM.RACEOTH"
+
+  RFSTDTC:
+    approach: "A"
+    rationale: "Company default: Use informed consent date as reference start date"
+
+  date_imputation:
+    partial_day: "01"
+    partial_month: "01"
+    rationale: "Company default: Impute partial dates to first of period"
+
+# Validation rules waived company-wide (rare — usually study-specific)
+validation_exceptions: []
+
+# CT mapping overrides applied company-wide (keyed by codelist code)
+ct_overrides: {}

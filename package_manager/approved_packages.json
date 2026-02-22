@@ -1,0 +1,214 @@
+{
+  "registry_version": "1.0",
+  "registry_date": "2026-02-21",
+  "organization": "Clinical Programming Department",
+  "description": "Enterprise-approved package registry for validated clinical programming environments. All packages listed here have been validated by IT and are approved for use in regulatory submissions.",
+  "validation_policy": "All packages must pass IT validation before use in production. Non-approved packages or versions are prohibited in submission-ready code.",
+  "languages": ["R", "Python", "SAS"],
+  "packages": [
+    {
+      "name": "arrow",
+      "language": "R",
+      "approved_version": "14.0.2",
+      "minimum_version": "14.0.0",
+      "status": "approved",
+      "validation_date": "2025-12-01",
+      "validated_by": "IT Validation Team",
+      "cran_url": "https://cran.r-project.org/package=arrow",
+      "documentation_path": "package_docs/r/arrow/14.0.2.md",
+      "install_command": "install.packages('arrow', repos='https://internal-cran.company.com')",
+      "purpose": "Read and write Apache Parquet and Arrow IPC files",
+      "key_functions": [
+        {"name": "read_parquet", "description": "Read a Parquet file into a data frame", "example": "df <- arrow::read_parquet('data.parquet')"},
+        {"name": "write_parquet", "description": "Write a data frame to Parquet format", "example": "arrow::write_parquet(df, 'output.parquet')"},
+        {"name": "read_csv_arrow", "description": "Fast CSV reader using Arrow backend", "example": "df <- arrow::read_csv_arrow('data.csv')"},
+        {"name": "open_dataset", "description": "Open a multi-file dataset lazily", "example": "ds <- arrow::open_dataset('data_dir/')"}
+      ],
+      "restrictions": [
+        "Use arrow::write_parquet() as primary output format for all SDTM datasets",
+        "Do NOT use arrow::open_dataset() for streaming in validated programs -- use read_parquet() for explicit loading",
+        "Parquet compression: use default (snappy) -- do not change compression algorithm"
+      ],
+      "known_issues": [
+        "Version 14.0.0 has a known issue with timestamp timezone handling on Windows -- use 14.0.2+",
+        "Large string columns (>2GB) require arrow >= 14.0.0"
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "haven",
+      "language": "R",
+      "approved_version": "2.5.4",
+      "minimum_version": "2.5.0",
+      "status": "approved",
+      "validation_date": "2025-11-15",
+      "validated_by": "IT Validation Team",
+      "cran_url": "https://cran.r-project.org/package=haven",
+      "documentation_path": "package_docs/r/haven/2.5.4.md",
+      "install_command": "install.packages('haven', repos='https://internal-cran.company.com')",
+      "purpose": "Read and write SAS, SPSS, and Stata data files including XPT transport",
+      "key_functions": [
+        {"name": "read_sas", "description": "Read SAS7BDAT files", "example": "df <- haven::read_sas('data.sas7bdat')"},
+        {"name": "read_xpt", "description": "Read SAS XPORT (XPT) transport files", "example": "df <- haven::read_xpt('data.xpt')"},
+        {"name": "write_xpt", "description": "Write SAS XPORT v5 transport files for FDA submission", "example": "haven::write_xpt(df, path='data.xpt', version=5)"},
+        {"name": "write_sas", "description": "Write SAS7BDAT files", "example": "haven::write_sas(df, 'data.sas7bdat')"}
+      ],
+      "restrictions": [
+        "For FDA submissions, ALWAYS use write_xpt() with version=5 (SAS XPORT v5 format)",
+        "Do NOT use write_xpt() with version=8 -- FDA does not accept XPORT v8",
+        "Character variable lengths are determined by max observed value -- set lengths explicitly for submission datasets",
+        "Label attributes must be set before writing XPT: attr(df$var, 'label') <- 'Description'"
+      ],
+      "known_issues": [
+        "write_xpt() silently truncates labels > 40 characters in v5 format",
+        "Numeric precision may differ slightly between SAS and R for XPORT roundtripping"
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "dplyr",
+      "language": "R",
+      "approved_version": "1.1.4",
+      "minimum_version": "1.1.0",
+      "status": "approved",
+      "validation_date": "2025-10-01",
+      "validated_by": "IT Validation Team",
+      "documentation_path": "package_docs/r/dplyr/1.1.4.md",
+      "install_command": "install.packages('dplyr', repos='https://internal-cran.company.com')",
+      "purpose": "Data manipulation verbs for data frames",
+      "key_functions": [
+        {"name": "mutate", "description": "Add or modify columns", "example": "df <- df %>% mutate(AGE = as.integer(age_years))"},
+        {"name": "filter", "description": "Subset rows", "example": "df <- df %>% filter(!is.na(USUBJID))"},
+        {"name": "select", "description": "Select columns", "example": "df <- df %>% select(USUBJID, SEX, AGE)"},
+        {"name": "arrange", "description": "Sort rows", "example": "df <- df %>% arrange(USUBJID, VISITNUM)"},
+        {"name": "group_by", "description": "Group by variables for aggregation", "example": "df <- df %>% group_by(USUBJID) %>% mutate(SEQ = row_number())"}
+      ],
+      "restrictions": [
+        "Prefer base R for simple operations in validated programs (less dependency risk)",
+        "When using dplyr in SDTM programs, always ungroup() after group_by operations",
+        "Do NOT use .data pronoun in validated code -- use explicit column names"
+      ],
+      "known_issues": [],
+      "dependencies": ["tidyselect", "vctrs", "pillar"]
+    },
+    {
+      "name": "pandas",
+      "language": "Python",
+      "approved_version": "2.1.4",
+      "minimum_version": "2.0.0",
+      "status": "approved",
+      "validation_date": "2025-12-15",
+      "validated_by": "IT Validation Team",
+      "documentation_path": "package_docs/python/pandas/2.1.4.md",
+      "install_command": "pip install pandas==2.1.4 --index-url https://internal-pypi.company.com/simple",
+      "purpose": "Data manipulation and analysis for tabular data",
+      "key_functions": [
+        {"name": "read_csv", "description": "Read CSV files", "example": "df = pd.read_csv('data.csv')"},
+        {"name": "read_parquet", "description": "Read Parquet files", "example": "df = pd.read_parquet('data.parquet')"},
+        {"name": "DataFrame.to_parquet", "description": "Write Parquet files", "example": "df.to_parquet('output.parquet')"},
+        {"name": "DataFrame.merge", "description": "Merge/join two DataFrames", "example": "merged = df1.merge(df2, on='USUBJID')"},
+        {"name": "DataFrame.compare", "description": "Compare two DataFrames", "example": "diff = df1.compare(df2)"}
+      ],
+      "restrictions": [
+        "Always specify encoding='utf-8' when reading/writing CSV files",
+        "Use pyarrow engine for Parquet operations: engine='pyarrow'",
+        "Do NOT use inplace=True -- always assign results to variables for clarity"
+      ],
+      "known_issues": [
+        "pandas 2.x changed default dtype inference -- use dtype parameter explicitly for clinical data"
+      ],
+      "dependencies": ["pyarrow"]
+    },
+    {
+      "name": "pyarrow",
+      "language": "Python",
+      "approved_version": "14.0.2",
+      "minimum_version": "14.0.0",
+      "status": "approved",
+      "validation_date": "2025-12-15",
+      "validated_by": "IT Validation Team",
+      "documentation_path": "package_docs/python/pyarrow/14.0.2.md",
+      "install_command": "pip install pyarrow==14.0.2 --index-url https://internal-pypi.company.com/simple",
+      "purpose": "Python bindings for Apache Arrow -- Parquet read/write backend for pandas",
+      "key_functions": [
+        {"name": "parquet.read_table", "description": "Read Parquet to Arrow Table", "example": "table = pq.read_table('data.parquet')"},
+        {"name": "parquet.write_table", "description": "Write Arrow Table to Parquet", "example": "pq.write_table(table, 'output.parquet')"}
+      ],
+      "restrictions": [
+        "Use as pandas Parquet backend -- do not use pyarrow directly unless needed for performance",
+        "Match version with R arrow package version for Parquet compatibility"
+      ],
+      "known_issues": [],
+      "dependencies": []
+    },
+    {
+      "name": "pyyaml",
+      "language": "Python",
+      "approved_version": "6.0.1",
+      "minimum_version": "6.0",
+      "status": "approved",
+      "validation_date": "2025-09-01",
+      "validated_by": "IT Validation Team",
+      "documentation_path": "package_docs/python/pyyaml/6.0.1.md",
+      "install_command": "pip install pyyaml==6.0.1 --index-url https://internal-pypi.company.com/simple",
+      "purpose": "YAML parser and emitter for configuration files",
+      "key_functions": [
+        {"name": "safe_load", "description": "Safely load YAML content", "example": "config = yaml.safe_load(open('config.yaml'))"},
+        {"name": "dump", "description": "Write Python objects to YAML", "example": "yaml.dump(config, open('config.yaml', 'w'))"}
+      ],
+      "restrictions": [
+        "ALWAYS use yaml.safe_load() -- NEVER use yaml.load() without Loader parameter (security risk)",
+        "Do NOT use yaml.unsafe_load() in production code"
+      ],
+      "known_issues": [],
+      "dependencies": []
+    },
+    {
+      "name": "BASE SAS",
+      "language": "SAS",
+      "approved_version": "9.4 M8",
+      "minimum_version": "9.4 M5",
+      "status": "approved",
+      "validation_date": "2025-06-01",
+      "validated_by": "IT Validation Team",
+      "documentation_path": "package_docs/sas/base_sas/9.4_M8.md",
+      "install_command": "Installed by IT -- contact helpdesk for access",
+      "purpose": "Base SAS system for data manipulation, statistical analysis, and reporting",
+      "key_functions": [
+        {"name": "PROC SORT", "description": "Sort datasets", "example": "proc sort data=dm; by USUBJID; run;"},
+        {"name": "PROC COMPARE", "description": "Compare two datasets", "example": "proc compare base=prod compare=qc; run;"},
+        {"name": "PROC TRANSPOSE", "description": "Reshape data", "example": "proc transpose data=long out=wide; by USUBJID; run;"},
+        {"name": "DATA step", "description": "Read, transform, and write datasets", "example": "data dm; set raw.dm; ... run;"},
+        {"name": "PROC CPORT/CIMPORT", "description": "Create transport files", "example": "proc cport data=dm file='dm.xpt'; run;"}
+      ],
+      "restrictions": [
+        "For XPORT files, use PROC COPY with XPORT engine -- NOT PROC CPORT (different format)",
+        "Maximum variable name length: 8 characters for XPORT v5",
+        "Maximum label length: 40 characters for XPORT v5",
+        "Do NOT use PROC HTTP or PROC GROOVY in validated programs"
+      ],
+      "known_issues": [
+        "PROC COMPARE may report differences for numeric variables due to floating-point precision"
+      ],
+      "dependencies": []
+    },
+    {
+      "name": "tidyverse",
+      "language": "R",
+      "approved_version": null,
+      "status": "not_approved",
+      "validation_date": null,
+      "reason": "tidyverse is a meta-package that installs 30+ packages. Approve individual packages (dplyr, tidyr, ggplot2) instead to minimize dependency surface.",
+      "alternative": "Use individual packages: dplyr (approved), tidyr (under review), ggplot2 (approved for TLFs only)"
+    },
+    {
+      "name": "data.table",
+      "language": "R",
+      "approved_version": null,
+      "status": "under_review",
+      "validation_date": null,
+      "reason": "Performance benefits for large datasets, but non-standard syntax may reduce code readability for reviewers. Under evaluation.",
+      "expected_decision_date": "2026-Q2"
+    }
+  ]
+}

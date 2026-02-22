@@ -1,0 +1,8 @@
+# XYZ-2026-001: Study-specific conventions
+#
+# Overrides company defaults from standards/conventions.yaml.
+
+decisions:
+  RACE:
+    approach: "B"
+    rationale: "Phase III multi-site study: conservative approach per protocol section 8.3"

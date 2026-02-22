@@ -1,0 +1,22 @@
+# Company-wide known pitfalls
+#
+# Pitfalls promoted from study-level after being observed in 2+ studies.
+# Each entry includes the original study where it was first seen.
+# Agents receive these as context to avoid repeating known mistakes.
+
+pitfalls: []
+
+# Example entry:
+# - category: "r_script_error"
+#   domain: "DM"
+#   description: "iso_date fails on dates with slash separators where both parts <= 12"
+#   root_cause: "Ambiguous date format (03/04/2020) defaults to MM/DD/YYYY"
+#   resolution: "Use infmt parameter: iso_date(dm, invar='BRTHDT', outvar='BRTHDTC', infmt='DD/MM/YYYY')"
+#   severity: "blocker"
+#   promoted_from:
+#     - study: "XYZ_2026_001"
+#       timestamp: "2026-02-22T10:00:00"
+#     - study: "ABC_2026_002"
+#       timestamp: "2026-03-15T14:30:00"
+#   promoted_by: "clinical_programmer"
+#   promotion_date: "2026-03-16"

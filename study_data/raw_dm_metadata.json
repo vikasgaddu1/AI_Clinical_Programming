@@ -1,0 +1,36 @@
+{
+  "dataset_name": "RAW_DM",
+  "created": "2026-02-16T00:59:13.587897",
+  "record_count": 300,
+  "column_count": 16,
+  "columns": [
+    "STUDYID",
+    "SITEID",
+    "SUBJID",
+    "BRTHDT",
+    "RFSTDTC",
+    "SEX",
+    "RACE",
+    "ETHNIC",
+    "AGE",
+    "AGEU",
+    "ARMCD",
+    "ARM",
+    "COUNTRY",
+    "INVNAM",
+    "RACEOTH",
+    "RACEO"
+  ],
+  "date_formats": {
+    "101": "DD-MON-YYYY",
+    "102": "MM/DD/YYYY",
+    "103": "DD-MON-YYYY",
+    "104": "DD/MM/YYYY",
+    "105": "MM/DD/YYYY",
+    "106": "DD-MON-YYYY"
+  },
+  "files_created": {
+    "csv": "/sessions/affectionate-awesome-johnson/mnt/AI_Clinical_Programming/study_data/raw_dm.csv",
+    "sas7bdat": "/sessions/affectionate-awesome-johnson/mnt/AI_Clinical_Programming/study_data/raw_dm.sas7bdat"
+  }
+}

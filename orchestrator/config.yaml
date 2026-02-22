@@ -1,0 +1,48 @@
+study:
+  study_id: "XYZ-2026-001"
+  domain: "DM"
+
+paths:
+  raw_data: "./study_data/raw_dm.csv"
+  annotated_crf: "./study_data/annotated_crf_dm.csv"
+  protocol: "./study_data/protocol_excerpt_dm.pdf"
+  sap: "./study_data/sap_excerpt_dm.pdf"
+  function_registry: "./r_functions/function_registry.json"
+  function_library: "./r_functions/"
+  ct_lookup: "./macros/ct_lookup.csv"
+  output_dir: "./orchestrator/outputs/"
+
+agents:
+  use_llm: false           # Set to true when ANTHROPIC_API_KEY is available
+  dry_run: false            # Log prompts without calling API (for training)
+  spec_builder:
+    model: "claude-sonnet-4-20250514"
+    max_tokens: 8000
+  spec_reviewer:
+    model: "claude-opus-4-20250514"
+    max_tokens: 4000
+  production_programmer:
+    model: "claude-sonnet-4-20250514"
+    max_tokens: 8000
+  qc_programmer:
+    model: "claude-opus-4-20250514"
+    max_tokens: 8000
+  validation_agent:
+    model: "claude-sonnet-4-20250514"
+    max_tokens: 4000
+
+comparison:
+  max_iterations: 5
+  method: "exact"
+
+database:
+  host: "localhost"
+  port: 5432
+  name: "sdtm_ig_rag"
+  user: "sdtm_user"
+
+r:
+  rscript_path: "Rscript"
+  output_format: "parquet"   # parquet (primary), csv, or rds
+  write_xpt: true            # also write SAS transport (.xpt) for regulatory submission
+  xpt_dir: "./orchestrator/outputs/validation"

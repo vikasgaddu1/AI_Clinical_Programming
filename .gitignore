@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Secrets
+.env
+*.key
+credentials.json
+
+# PDFs and large reference documents (keep locally, not in repo)
+*.pdf
+docs/SDTMIG_v3.4.pdf
+study_data/*.pdf
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated outputs (large/binary)
+orchestrator/outputs/datasets/*.parquet
+orchestrator/outputs/datasets/*.rds
+orchestrator/outputs/qc/*.parquet
+orchestrator/outputs/qc/*.rds
+orchestrator/outputs/validation/*.xpt
+
+# R artifacts
+.Rhistory
+.RData
+.Rproj.user/
+
+# Pipeline state (regenerated on each run)
+orchestrator/outputs/pipeline_state.json
+
+# Tool logs
+.playwright-mcp/

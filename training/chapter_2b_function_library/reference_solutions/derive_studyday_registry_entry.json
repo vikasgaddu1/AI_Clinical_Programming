@@ -1,0 +1,65 @@
+{
+  "name": "derive_studyday",
+  "file": "derive_studyday.R",
+  "category": "Study Day Derivations",
+  "purpose": "Calculate study day from event date and reference start date with no Day 0",
+  "when_to_use": [
+    "Derive any --DY variable (DMDY, AESTDY, AEENDY, VSDY, LBDY) from event date and RFSTDTC",
+    "Use whenever an SDTM domain needs a study day relative to the reference start date",
+    "Apply after dates have been converted to ISO 8601 format (requires iso_date output)"
+  ],
+  "parameters": [
+    {
+      "name": "data",
+      "type": "data frame",
+      "required": true,
+      "description": "Input data frame with event and reference date columns in ISO YYYY-MM-DD format",
+      "example": "dm"
+    },
+    {
+      "name": "evtdt",
+      "type": "character",
+      "required": true,
+      "description": "Name of the event date variable (ISO YYYY-MM-DD character)",
+      "example": "DMDTC"
+    },
+    {
+      "name": "refdt",
+      "type": "character",
+      "required": true,
+      "description": "Name of the reference start date variable (ISO YYYY-MM-DD character, typically RFSTDTC)",
+      "example": "RFSTDTC"
+    },
+    {
+      "name": "outvar",
+      "type": "character",
+      "required": false,
+      "default": "STUDYDAY",
+      "description": "Name of the output study day variable (numeric integer)",
+      "example": "DMDY"
+    }
+  ],
+  "output_type": "Numeric integer variable (study day, no Day 0)",
+  "dependencies": ["iso_date"],
+  "usage_examples": [
+    {
+      "description": "Derive DMDY from DMDTC and RFSTDTC",
+      "code": "dm <- derive_studyday(dm, evtdt = \"DMDTC\", refdt = \"RFSTDTC\", outvar = \"DMDY\")"
+    },
+    {
+      "description": "Derive AESTDY for adverse event start day",
+      "code": "ae <- derive_studyday(ae, evtdt = \"AESTDTC\", refdt = \"RFSTDTC\", outvar = \"AESTDY\")"
+    },
+    {
+      "description": "Derive AEENDY for adverse event end day",
+      "code": "ae <- derive_studyday(ae, evtdt = \"AEENDTC\", refdt = \"RFSTDTC\", outvar = \"AEENDY\")"
+    }
+  ],
+  "notes": [
+    "No Day 0 per SDTM: reference date itself is Day 1, the day before is Day -1",
+    "Both input dates must be ISO YYYY-MM-DD character (run iso_date first if needed)",
+    "Missing event or reference date produces NA for study day",
+    "Output is integer (not floating point)",
+    "Applicable across all SDTM domains that have --DY variables (DM, AE, VS, LB, CM, etc.)"
+  ]
+}

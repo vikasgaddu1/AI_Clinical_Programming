@@ -1,0 +1,28 @@
+# Study-specific convention overrides
+#
+# Only include decisions that DIFFER from standards/conventions.yaml.
+# All other decisions are inherited from the company defaults.
+#
+# NOTE: The memory/ directory in this study holds auto-generated memory files:
+#   memory/decisions_log.yaml      - Human review decision history
+#   memory/pitfalls.yaml           - Errors and resolutions encountered
+#   memory/domain_context.yaml     - Cross-domain decision snapshots
+#   memory/modification_history.yaml - Program change log
+# These are written automatically by the pipeline. Do not delete them.
+
+decisions: {}
+
+# Validation rules waived for this study
+# Example:
+#   - rule: "SD1002"
+#     status: "waived"
+#     justification: "Study protocol permits partial dates for RFENDTC"
+validation_exceptions: []
+
+# CT mapping overrides for this study (keyed by codelist code)
+# Example:
+#   C74457:  # RACE
+#     - raw: "Filipino"
+#       ct: "ASIAN"
+#       note: "Protocol-defined mapping"
+ct_overrides: {}

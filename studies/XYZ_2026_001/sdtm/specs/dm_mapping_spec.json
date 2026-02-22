@@ -1,0 +1,359 @@
+{
+  "study_id": "XYZ-2026-001",
+  "domain": "DM",
+  "spec_version": "1.0",
+  "created_by": "Spec Builder Agent",
+  "variables": [
+    {
+      "target_variable": "COUNTRY",
+      "target_domain": "DM",
+      "source_variable": "COUNTRY",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 20,
+      "mapping_logic": "Constant or pass-through",
+      "macro_used": "",
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "ARM",
+      "target_domain": "DM",
+      "source_variable": "ARM",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 20,
+      "mapping_logic": "Constant or pass-through",
+      "macro_used": "",
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "ARMCD",
+      "target_domain": "DM",
+      "source_variable": "ARMCD",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 20,
+      "mapping_logic": "Constant or pass-through",
+      "macro_used": "",
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "SITEID",
+      "target_domain": "DM",
+      "source_variable": "SITEID",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 20,
+      "mapping_logic": "Constant or pass-through",
+      "macro_used": "",
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "SUBJID",
+      "target_domain": "DM",
+      "source_variable": "SUBJID",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 20,
+      "mapping_logic": "Constant or pass-through",
+      "macro_used": "",
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "DOMAIN",
+      "target_domain": "DM",
+      "source_variable": "DM",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 20,
+      "mapping_logic": "Constant or pass-through",
+      "macro_used": "",
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "STUDYID",
+      "target_domain": "DM",
+      "source_variable": "study",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 20,
+      "mapping_logic": "Constant or pass-through",
+      "macro_used": "",
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "BRTHDTC",
+      "target_domain": "DM",
+      "source_variable": "BRTHDT",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 60,
+      "mapping_logic": "Apply iso_date() with params {'invar': 'BRTHDT', 'outvar': 'BRTHDTC'}",
+      "macro_used": "iso_date",
+      "function_parameters": {
+        "invar": "BRTHDT",
+        "outvar": "BRTHDTC"
+      },
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "RFSTDTC",
+      "target_domain": "DM",
+      "source_variable": "RFSTDTC",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 60,
+      "mapping_logic": "Apply iso_date() with params {'invar': 'RFSTDTC', 'outvar': 'RFSTDTC'}",
+      "macro_used": "iso_date",
+      "function_parameters": {
+        "invar": "RFSTDTC",
+        "outvar": "RFSTDTC"
+      },
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "AGE",
+      "target_domain": "DM",
+      "source_variable": "BRTHDTC",
+      "source_dataset": "raw_dm",
+      "data_type": "Num",
+      "length": 8,
+      "mapping_logic": "Apply derive_age() with params {'brthdt': 'BRTHDTC', 'refdt': 'RFSTDTC'}",
+      "macro_used": "derive_age",
+      "function_parameters": {
+        "brthdt": "BRTHDTC",
+        "refdt": "RFSTDTC"
+      },
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "SEX",
+      "target_domain": "DM",
+      "source_variable": "SEX",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 60,
+      "mapping_logic": "Apply assign_ct() with params {'invar': 'SEX', 'outvar': 'SEX', 'codelist': 'C66731'}",
+      "macro_used": "assign_ct",
+      "function_parameters": {
+        "invar": "SEX",
+        "outvar": "SEX",
+        "codelist": "C66731"
+      },
+      "human_decision_required": false,
+      "codelist_code": "C66731",
+      "codelist_name": "Sex",
+      "controlled_terms": [
+        "M",
+        "F",
+        "U"
+      ]
+    },
+    {
+      "target_variable": "RACE",
+      "target_domain": "DM",
+      "source_variable": "RACE",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 60,
+      "mapping_logic": "Apply assign_ct() with params {'invar': 'RACE', 'outvar': 'RACE', 'codelist': 'C74457'}",
+      "macro_used": "assign_ct",
+      "function_parameters": {
+        "invar": "RACE",
+        "outvar": "RACE",
+        "codelist": "C74457"
+      },
+      "human_decision_required": true,
+      "codelist_code": "C74457",
+      "codelist_name": "Race",
+      "decision_options": [
+        {
+          "id": "A",
+          "description": "Map free-text to closest CT term where possible.",
+          "ig_reference": "SDTM IG 3.4",
+          "pros": [
+            "Maximizes CT"
+          ],
+          "cons": [
+            "Judgment calls"
+          ]
+        },
+        {
+          "id": "B",
+          "description": "All Other Specify \u2192 RACE='OTHER', free text in SUPPDM.",
+          "ig_reference": "SDTM IG 3.4",
+          "pros": [
+            "Conservative"
+          ],
+          "cons": [
+            "Many SUPPDM"
+          ]
+        },
+        {
+          "id": "C",
+          "description": "Mixed \u2192 MULTIPLE, individual in SUPPDM.",
+          "ig_reference": "SDTM IG 3.4",
+          "pros": [
+            "Complete"
+          ],
+          "cons": [
+            "Complex"
+          ]
+        }
+      ]
+    },
+    {
+      "target_variable": "ETHNIC",
+      "target_domain": "DM",
+      "source_variable": "ETHNIC",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 60,
+      "mapping_logic": "Apply assign_ct() with params {'invar': 'ETHNIC', 'outvar': 'ETHNIC', 'codelist': 'C66790'}",
+      "macro_used": "assign_ct",
+      "function_parameters": {
+        "invar": "ETHNIC",
+        "outvar": "ETHNIC",
+        "codelist": "C66790"
+      },
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "USUBJID",
+      "target_domain": "DM",
+      "source_variable": "SUBJID",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 40,
+      "mapping_logic": "Concatenate STUDYID + '-' + SUBJID",
+      "macro_used": "",
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "AGEU",
+      "target_domain": "DM",
+      "source_variable": "BRTHDTC",
+      "source_dataset": "derived",
+      "data_type": "Char",
+      "length": 10,
+      "mapping_logic": "Derived by derive_age(), always 'YEARS'",
+      "macro_used": "derive_age",
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "ACTARMCD",
+      "target_domain": "DM",
+      "source_variable": "ARMCD",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 20,
+      "mapping_logic": "Set equal to ARMCD (no treatment deviations in this study)",
+      "macro_used": "",
+      "human_decision_required": true,
+      "decision_options": [
+        {
+          "id": "A",
+          "description": "ACTARMCD = ARMCD for all subjects (no protocol deviations affecting treatment).",
+          "ig_reference": "SDTM IG 3.4 \u2014 ACTARMCD",
+          "pros": [
+            "Simple",
+            "Appropriate when no deviations"
+          ],
+          "cons": [
+            "Assumes no deviations exist"
+          ]
+        },
+        {
+          "id": "B",
+          "description": "Derive ACTARMCD from actual treatment received, compare against planned ARM.",
+          "ig_reference": "SDTM IG 3.4 \u2014 ACTARMCD",
+          "pros": [
+            "Handles deviations correctly"
+          ],
+          "cons": [
+            "Requires deviation data not in raw_dm"
+          ]
+        }
+      ]
+    },
+    {
+      "target_variable": "ACTARM",
+      "target_domain": "DM",
+      "source_variable": "ARM",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 200,
+      "mapping_logic": "Set equal to ARM (no treatment deviations in this study)",
+      "macro_used": "",
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "DMDTC",
+      "target_domain": "DM",
+      "source_variable": "RFSTDTC",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 10,
+      "mapping_logic": "Set to RFSTDTC (demographics captured at enrollment visit)",
+      "macro_used": "",
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "DMDY",
+      "target_domain": "DM",
+      "source_variable": "derived",
+      "source_dataset": "derived",
+      "data_type": "Num",
+      "length": 8,
+      "mapping_logic": "(DMDTC - RFSTDTC) + 1; equals 1 when DMDTC = RFSTDTC",
+      "macro_used": "",
+      "human_decision_required": false
+    },
+    {
+      "target_variable": "RFENDTC",
+      "target_domain": "DM",
+      "source_variable": "N/A",
+      "source_dataset": "N/A",
+      "data_type": "Char",
+      "length": 10,
+      "mapping_logic": "No raw source available in raw_dm; set to missing",
+      "macro_used": "",
+      "human_decision_required": true,
+      "decision_options": [
+        {
+          "id": "A",
+          "description": "Set RFENDTC to blank/missing (no end-of-participation date in raw data).",
+          "ig_reference": "SDTM IG 3.4 \u2014 RFENDTC",
+          "pros": [
+            "Honest \u2014 data not available"
+          ],
+          "cons": [
+            "Missing required variable"
+          ]
+        },
+        {
+          "id": "B",
+          "description": "Derive from last visit date or last dose date if available in other domains.",
+          "ig_reference": "SDTM IG 3.4 \u2014 RFENDTC",
+          "pros": [
+            "Populated field"
+          ],
+          "cons": [
+            "Source data not in DM domain"
+          ]
+        }
+      ]
+    },
+    {
+      "target_variable": "INVNAM",
+      "target_domain": "DM",
+      "source_variable": "INVNAM",
+      "source_dataset": "raw_dm",
+      "data_type": "Char",
+      "length": 100,
+      "mapping_logic": "Pass-through from raw data",
+      "macro_used": "",
+      "human_decision_required": false
+    }
+  ]
+}

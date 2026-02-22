@@ -1,0 +1,16 @@
+{
+  "study_id": "XYZ-2026-001",
+  "domain": "DM",
+  "current_phase": "spec_building",
+  "spec_status": "draft",
+  "production_status": "pending",
+  "qc_status": "pending",
+  "comparison_result": "pending",
+  "comparison_iteration": 0,
+  "validation_status": "pending",
+  "human_decisions": {},
+  "error_log": [],
+  "artifacts": {
+    "draft_spec": "C:\\Users\\vikas\\OneDrive\\Documents\\AI_Clinical_Programming\\studies\\XYZ_2026_001\\sdtm\\specs\\dm_mapping_spec.json"
+  }
+}

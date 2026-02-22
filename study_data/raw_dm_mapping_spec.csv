@@ -1,0 +1,22 @@
+Source Variable,Source Dataset,Target Variable,Target Domain,Mapping Logic,Controlled Terminology
+STUDYID,raw_dm,STUDYID,DM,Direct mapping from source,Protocol-specific
+STUDYID+SITEID+SUBJID,raw_dm,USUBJID,DM,"Concatenate STUDYID, SITEID, SUBJID",Study-specific
+SUBJID,raw_dm,SUBJID,DM,Direct mapping from source,Study-specific
+SITEID,raw_dm,SITEID,DM,Direct mapping from source,Study-specific
+INVNAM,raw_dm,INVNAM,DM,Direct mapping from source,Study-specific
+RFSTDTC,raw_dm,RFSTDTC,DM,Informed Consent Date - standardize to ISO8601 format,ISO8601
+RFENDTC,Protocol,RFENDTC,DM,Study termination date (end of last visit or early termination),ISO8601
+BRTHDT,raw_dm,BRTHDTC,DM,Birth date - standardize to ISO8601 format (YYYY-MM-DD),ISO8601
+AGE,raw_dm,AGE,DM,Age in years at informed consent,Numeric
+AGEU,raw_dm,AGEU,DM,Age unit,CDISC Terminology - C66781
+SEX,raw_dm,SEX,DM,"Standardize to M/F/U codes; handle 1/2, Male/Female variants",CDISC CT - C66731
+RACE,raw_dm,RACE,DM,Standardize race values; handle missing values; apply CDISC terminology,CDISC CT - C74457
+ETHNIC,raw_dm,ETHNIC,DM,Standardize ethnicity to HISPANIC OR LATINO / NOT HISPANIC OR LATINO,CDISC CT - C66743
+ARMCD,raw_dm,ARMCD,DM,Treatment arm code assigned at randomization,Study-specific
+ARM,raw_dm,ARM,DM,Full treatment arm description,Study-specific
+ARMCD,raw_dm,ACTARMCD,DM,Actual treatment arm code (from dosing records if different from randomized),Study-specific
+ARM,raw_dm,ACTARM,DM,Actual treatment arm description (from dosing records),Study-specific
+COUNTRY,raw_dm,COUNTRY,DM,Country code - standardize to ISO 3166-1 alpha-3,ISO 3166-1
+System Date,System,DMDTC,DM,Record creation date/time,ISO8601
+RFSTDTC,raw_dm,DMDY,DM,Study day relative to RFSTDTC (informed consent date),Numeric
+N/A,Constant,DOMAIN,DM,"Constant value ""DM""",Fixed

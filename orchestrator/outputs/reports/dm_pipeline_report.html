@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SDTM Pipeline Report &mdash; DM | XYZ-2026-001</title>
+<style>
+/* ---------- Reset & Base ---------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #2c3e50; background: #f5f7fa; line-height: 1.6; padding: 0;
+}
+a { color: #2980b9; text-decoration: none; }
+code, .mono { font-family: "Cascadia Code", "Fira Code", "Consolas", monospace; font-size: 0.92em; }
+
+/* ---------- Header Banner ---------- */
+.report-header {
+    background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%);
+    color: #fff; padding: 32px 40px; display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 12px;
+}
+.report-header h1 { font-size: 1.6em; font-weight: 700; }
+.report-header .meta { font-size: 0.9em; opacity: 0.85; }
+.status-badge {
+    display: inline-block; padding: 4px 16px; border-radius: 20px;
+    font-weight: 700; font-size: 0.85em; letter-spacing: 0.5px; text-transform: uppercase;
+}
+.badge-passed  { background: #27ae60; color: #fff; }
+.badge-partial { background: #f39c12; color: #fff; }
+.badge-failed  { background: #e74c3c; color: #fff; }
+
+/* ---------- Content Container ---------- */
+.container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+
+/* ---------- Dashboard ---------- */
+.dashboard { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+.stat-box {
+    flex: 1 1 200px; background: #fff; border-radius: 8px; padding: 18px 20px;
+    border-left: 5px solid #95a5a6; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.stat-box h3 { font-size: 0.8em; text-transform: uppercase; color: #7f8c8d; margin-bottom: 4px; }
+.stat-box .value { font-size: 1.35em; font-weight: 700; }
+.stat-box.success { border-left-color: #27ae60; }
+.stat-box.failure { border-left-color: #e74c3c; }
+.stat-box.warning { border-left-color: #f39c12; }
+.stat-box.pending { border-left-color: #95a5a6; }
+
+/* ---------- Timeline ---------- */
+.timeline { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 28px; align-items: center; }
+.stage-box {
+    flex: 1 1 110px; text-align: center; padding: 12px 8px; border-radius: 6px;
+    font-size: 0.82em; font-weight: 600; color: #fff; position: relative;
+    min-width: 100px;
+}
+.stage-box.completed { background: #27ae60; }
+.stage-box.active    { background: #2980b9; }
+.stage-box.pending   { background: #bdc3c7; color: #636e72; }
+.stage-box.failed    { background: #e74c3c; }
+.stage-arrow { font-size: 1.2em; color: #95a5a6; flex: 0 0 auto; }
+
+/* ---------- Sections ---------- */
+.section {
+    background: #fff; border-radius: 8px; margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden;
+}
+.section summary, .section-title {
+    padding: 14px 20px; font-size: 1.05em; font-weight: 600; cursor: pointer;
+    background: #fafbfc; border-bottom: 1px solid #ecf0f1; user-select: none;
+    list-style: none; display: flex; align-items: center; gap: 8px;
+}
+.section summary::-webkit-details-marker { display: none; }
+.section summary::before { content: "\25B6"; font-size: 0.7em; transition: transform 0.2s; }
+.section[open] summary::before { transform: rotate(90deg); }
+.section-body { padding: 20px; }
+
+/* ---------- Tables ---------- */
+table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #ecf0f1; }
+th {
+    background: #f5f7fa; font-weight: 600; color: #2c3e50; position: sticky; top: 0;
+    cursor: pointer; white-space: nowrap;
+}
+th:hover { background: #e8ecf1; }
+tr:nth-child(even) { background: #fafbfc; }
+tr:hover { background: #eef2f7; }
+.decision-highlight { background: #fef9e7 !important; }
+.decision-highlight:hover { background: #fdf2d0 !important; }
+
+/* ---------- Callouts ---------- */
+.callout { padding: 14px 18px; border-radius: 6px; margin-bottom: 16px; border-left: 4px solid; }
+.callout-success { background: #eafaf1; border-color: #27ae60; color: #1e8449; }
+.callout-error   { background: #fdedec; border-color: #e74c3c; color: #c0392b; }
+.callout-warning { background: #fef9e7; border-color: #f39c12; color: #d68910; }
+.callout-info    { background: #eaf2f8; border-color: #2980b9; color: #1a5276; }
+
+/* ---------- Filter Buttons ---------- */
+.filter-bar { margin-bottom: 12px; display: flex; gap: 8px; }
+.filter-btn {
+    padding: 5px 14px; border-radius: 4px; border: 1px solid #bdc3c7;
+    background: #fff; cursor: pointer; font-size: 0.82em; font-weight: 600;
+}
+.filter-btn:hover { background: #ecf0f1; }
+.filter-btn.active { background: #2980b9; color: #fff; border-color: #2980b9; }
+
+/* ---------- Badge inline ---------- */
+.check-pass { color: #27ae60; font-weight: 700; }
+.check-fail { color: #e74c3c; font-weight: 700; }
+
+/* ---------- Iteration badge ---------- */
+.iter-badge {
+    display: inline-block; background: #f39c12; color: #fff; font-size: 0.7em;
+    padding: 1px 6px; border-radius: 10px; margin-left: 4px; vertical-align: middle;
+}
+
+/* ---------- Placeholder ---------- */
+.placeholder { color: #95a5a6; font-style: italic; padding: 16px 0; }
+
+/* ---------- Error Log ---------- */
+.error-section { border: 2px solid #e74c3c; }
+.error-section summary { background: #fdedec; color: #c0392b; }
+
+/* ---------- Scrollable table wrapper ---------- */
+.table-wrap { overflow-x: auto; max-height: 500px; overflow-y: auto; }
+
+/* ---------- Print ---------- */
+@media print {
+    body { background: #fff; font-size: 10pt; }
+    .report-header { background: #1a5276 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    details { display: block !important; }
+    details > summary { display: none; }
+    details > .section-body { display: block !important; }
+    .filter-bar { display: none; }
+    .stage-box, .stat-box, .status-badge, .callout {
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .section { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+    .table-wrap { max-height: none; overflow: visible; }
+}
+</style>
+<script>
+/* Filter validation checks by status */
+function filterChecks(status) {
+    var rows = document.querySelectorAll('#validation-table tbody tr');
+    for (var i = 0; i < rows.length; i++) {
+        var cell = rows[i].querySelector('td:nth-child(2)');
+        if (!cell) continue;
+        var text = cell.textContent.trim().toUpperCase();
+        if (status === 'ALL' || text === status) {
+            rows[i].style.display = '';
+        } else {
+            rows[i].style.display = 'none';
+        }
+    }
+    var btns = document.querySelectorAll('.filter-btn');
+    for (var j = 0; j < btns.length; j++) {
+        btns[j].classList.remove('active');
+        if (btns[j].getAttribute('data-filter') === status) {
+            btns[j].classList.add('active');
+        }
+    }
+}
+
+/* Sort table by column */
+function sortTable(tableId, colIdx) {
+    var table = document.getElementById(tableId);
+    if (!table) return;
+    var tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+    var dir = table.getAttribute('data-sort-dir-' + colIdx) === 'asc' ? 'desc' : 'asc';
+    table.setAttribute('data-sort-dir-' + colIdx, dir);
+    rows.sort(function(a, b) {
+        var aText = a.cells[colIdx] ? a.cells[colIdx].textContent.trim() : '';
+        var bText = b.cells[colIdx] ? b.cells[colIdx].textContent.trim() : '';
+        var aNum = parseFloat(aText);
+        var bNum = parseFloat(bText);
+        if (!isNaN(aNum) && !isNaN(bNum)) {
+            return dir === 'asc' ? aNum - bNum : bNum - aNum;
+        }
+        return dir === 'asc' ? aText.localeCompare(bText) : bText.localeCompare(aText);
+    });
+    for (var i = 0; i < rows.length; i++) {
+        tbody.appendChild(rows[i]);
+    }
+    /* Update header arrows */
+    var headers = table.querySelectorAll('th');
+    for (var h = 0; h < headers.length; h++) {
+        var txt = headers[h].textContent.replace(/ [\u25B2\u25BC]/g, '');
+        if (h === colIdx) {
+            txt += dir === 'asc' ? ' \u25B2' : ' \u25BC';
+        }
+        headers[h].textContent = txt;
+    }
+}
+
+/* Expand all sections (for print preview) */
+function expandAll() {
+    var details = document.querySelectorAll('details');
+    for (var i = 0; i < details.length; i++) {
+        details[i].setAttribute('open', '');
+    }
+}
+
+/* Collapse all sections */
+function collapseAll() {
+    var details = document.querySelectorAll('details');
+    for (var i = 0; i < details.length; i++) {
+        details[i].removeAttribute('open');
+    }
+}
+</script>
+</head>
+<body>
+<div class="report-header">
+  <div>
+    <h1>SDTM Pipeline Report &mdash; DM</h1>
+    <div class="meta">Study: XYZ-2026-001 &nbsp;|&nbsp; Generated: 2026-02-22 16:43:57</div>
+  </div>
+  <div>
+    <span class="status-badge badge-passed">PASSED</span>
+  </div>
+</div><div class="container"><div class="dashboard">
+  <div class="stat-box pending">
+    <h3>Spec Status</h3>
+    <div class="value">DRAFT</div>
+  </div>
+  <div class="stat-box success">
+    <h3>Comparison</h3>
+    <div class="value">MATCH</div>
+  </div>
+  <div class="stat-box success">
+    <h3>Validation</h3>
+    <div class="value">PASS</div>
+  </div>
+  <div class="stat-box warning">
+    <h3>Review Comments</h3>
+    <div class="value">2</div>
+  </div>
+</div><div class="timeline"><div class="stage-box active">Spec Build</div><div class="stage-arrow">&rarr;</div><div class="stage-box pending">Spec Review</div><div class="stage-arrow">&rarr;</div><div class="stage-box pending">Human Review</div><div class="stage-arrow">&rarr;</div><div class="stage-box pending">Production</div><div class="stage-arrow">&rarr;</div><div class="stage-box pending">QC</div><div class="stage-arrow">&rarr;</div><div class="stage-box pending">Compare</div><div class="stage-arrow">&rarr;</div><div class="stage-box pending">Validate</div></div><details class="section" open>
+  <summary>Mapping Specification</summary>
+  <div class="section-body"><div class="callout callout-warning"><strong>Review Comments:</strong><ul style="margin:6px 0 0 18px;"><li>Missing required DM variables: {&#x27;RFENDTC&#x27;, &#x27;DMDY&#x27;, &#x27;ACTARMCD&#x27;, &#x27;USUBJID&#x27;, &#x27;AGEU&#x27;, &#x27;ACTARM&#x27;, &#x27;DMDTC&#x27;}</li><li>RACE: has codelist but no controlled_terms listed</li></ul></div><div class="callout callout-info"><strong>Human Decisions:</strong><ul style="margin:6px 0 0 18px;"><li><strong>RACE</strong>: Choice B</li></ul></div><div class="table-wrap">
+<table id="spec-table"><thead><tr><th onclick="sortTable('spec-table', 0)">Variable</th><th onclick="sortTable('spec-table', 1)">Source</th><th onclick="sortTable('spec-table', 2)">Type</th><th onclick="sortTable('spec-table', 3)">Length</th><th onclick="sortTable('spec-table', 4)">Mapping Logic</th><th onclick="sortTable('spec-table', 5)">Codelist</th><th onclick="sortTable('spec-table', 6)">Decision?</th></tr></thead>
+<tbody><tr><td>COUNTRY</td><td>COUNTRY</td><td>Char</td><td>20</td><td><span class="mono">Constant or pass-through</span></td><td></td><td>No</td></tr><tr><td>ARM</td><td>ARM</td><td>Char</td><td>20</td><td><span class="mono">Constant or pass-through</span></td><td></td><td>No</td></tr><tr><td>ARMCD</td><td>ARMCD</td><td>Char</td><td>20</td><td><span class="mono">Constant or pass-through</span></td><td></td><td>No</td></tr><tr><td>SITEID</td><td>SITEID</td><td>Char</td><td>20</td><td><span class="mono">Constant or pass-through</span></td><td></td><td>No</td></tr><tr><td>SUBJID</td><td>SUBJID</td><td>Char</td><td>20</td><td><span class="mono">Constant or pass-through</span></td><td></td><td>No</td></tr><tr><td>DOMAIN</td><td>DM</td><td>Char</td><td>20</td><td><span class="mono">Constant or pass-through</span></td><td></td><td>No</td></tr><tr><td>STUDYID</td><td>study</td><td>Char</td><td>20</td><td><span class="mono">Constant or pass-through</span></td><td></td><td>No</td></tr><tr><td>BRTHDTC</td><td>BRTHDT</td><td>Char</td><td>60</td><td><span class="mono">Apply iso_date() with params {&#x27;invar&#x27;: &#x27;BRTHDT&#x27;, &#x27;outvar&#x27;: &#x27;BRTHDTC&#x27;}</span></td><td></td><td>No</td></tr><tr><td>RFSTDTC</td><td>RFSTDTC</td><td>Char</td><td>60</td><td><span class="mono">Apply iso_date() with params {&#x27;invar&#x27;: &#x27;RFSTDTC&#x27;, &#x27;outvar&#x27;: &#x27;RFSTDTC&#x27;}</span></td><td></td><td>No</td></tr><tr><td>AGE</td><td>BRTHDTC</td><td>Num</td><td>8</td><td><span class="mono">Apply derive_age() with params {&#x27;brthdt&#x27;: &#x27;BRTHDTC&#x27;, &#x27;refdt&#x27;: &#x27;RFSTDTC&#x27;}</span></td><td></td><td>No</td></tr><tr><td>SEX</td><td>SEX</td><td>Char</td><td>60</td><td><span class="mono">Apply assign_ct() with params {&#x27;invar&#x27;: &#x27;SEX&#x27;, &#x27;outvar&#x27;: &#x27;SEX&#x27;, &#x27;codelist&#x27;: &#x27;C66731&#x27;}</span></td><td>C66731 (Sex)</td><td>No</td></tr><tr class="decision-highlight"><td>RACE</td><td>RACE</td><td>Char</td><td>60</td><td><span class="mono">Apply assign_ct() with params {&#x27;invar&#x27;: &#x27;RACE&#x27;, &#x27;outvar&#x27;: &#x27;RACE&#x27;, &#x27;codelist&#x27;: &#x27;C74457&#x27;}</span></td><td>C74457 (Race)</td><td>Yes</td></tr><tr><td>ETHNIC</td><td>ETHNIC</td><td>Char</td><td>60</td><td><span class="mono">Apply assign_ct() with params {&#x27;invar&#x27;: &#x27;ETHNIC&#x27;, &#x27;outvar&#x27;: &#x27;ETHNIC&#x27;, &#x27;codelist&#x27;: &#x27;C66790&#x27;}</span></td><td></td><td>No</td></tr></tbody></table></div></div>
+</details><details class="section" open>
+  <summary>Production vs QC Comparison</summary>
+  <div class="section-body"><div class="callout callout-success"><strong>MATCH</strong> &mdash; Production and QC datasets match perfectly.</div></div>
+</details><details class="section" open>
+  <summary>P21 Validation</summary>
+  <div class="section-body"><div class="dashboard" style="margin-bottom:16px;">
+  <div class="stat-box success" style="flex: 0 1 150px;">
+    <h3>Pass</h3><div class="value">1</div>
+  </div>
+  <div class="stat-box pending" style="flex: 0 1 150px;">
+    <h3>Fail</h3><div class="value">0</div>
+  </div>
+</div><div class="filter-bar">
+  <button class="filter-btn active" data-filter="ALL" onclick="filterChecks('ALL')">All</button>
+  <button class="filter-btn" data-filter="PASS" onclick="filterChecks('PASS')">Pass Only</button>
+  <button class="filter-btn" data-filter="FAIL" onclick="filterChecks('FAIL')">Fail Only</button>
+</div><div class="table-wrap"><table id="validation-table">
+<thead><tr><th onclick="sortTable('validation-table', 0)">Check Name</th>
+<th onclick="sortTable('validation-table', 1)">Status</th>
+<th onclick="sortTable('validation-table', 2)">Details</th></tr></thead>
+<tbody><tr><td>Overall Validation</td><td><span class="check-pass">PASS</span></td><td>All checks passed</td></tr></tbody></table></div></div>
+</details><details class="section">
+  <summary>Dataset Preview</summary>
+  <div class="section-body"><h4 style="margin:12px 0 6px;">Production Dataset (first 10 rows)</h4><div class="table-wrap"><table id="production-dataset">
+<thead><tr><th onclick="sortTable('production-dataset', 0)">STUDYID</th><th onclick="sortTable('production-dataset', 1)">DOMAIN</th><th onclick="sortTable('production-dataset', 2)">USUBJID</th><th onclick="sortTable('production-dataset', 3)">SUBJID</th><th onclick="sortTable('production-dataset', 4)">RFSTDTC</th><th onclick="sortTable('production-dataset', 5)">SITEID</th><th onclick="sortTable('production-dataset', 6)">BRTHDTC</th><th onclick="sortTable('production-dataset', 7)">AGE</th><th onclick="sortTable('production-dataset', 8)">AGEU</th><th onclick="sortTable('production-dataset', 9)">SEX</th><th onclick="sortTable('production-dataset', 10)">RACE</th><th onclick="sortTable('production-dataset', 11)">ETHNIC</th><th onclick="sortTable('production-dataset', 12)">ARMCD</th><th onclick="sortTable('production-dataset', 13)">ARM</th><th onclick="sortTable('production-dataset', 14)">COUNTRY</th><th onclick="sortTable('production-dataset', 15)">BRTHDT</th><th onclick="sortTable('production-dataset', 16)">INVNAM</th><th onclick="sortTable('production-dataset', 17)">RACEOTH</th><th onclick="sortTable('production-dataset', 18)">RACEO</th></tr></thead>
+<tbody><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00001</td><td>101-00001</td><td>2025-09-07</td><td>101</td><td>1954-09-04</td><td>71</td><td>YEARS</td><td>F</td><td>OTHER</td><td>UNKNOWN</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>04-Sep-1954</td><td>Dr. James Wilson</td><td>Filipino</td><td>Filipino</td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00002</td><td>101-00002</td><td>2025-07-18</td><td>101</td><td>1954-11-24</td><td>70</td><td>YEARS</td><td>M</td><td>OTHER</td><td>None</td><td>PBO</td><td>Placebo</td><td>USA</td><td>24-Nov-1954</td><td>Dr. James Wilson</td><td>Middle Eastern</td><td></td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00003</td><td>101-00003</td><td>2025-06-11</td><td>101</td><td>1948-06-05</td><td>77</td><td>YEARS</td><td>F</td><td>OTHER</td><td>HISPANIC OR LATINO</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>05-Jun-1948</td><td>Dr. James Wilson</td><td>Mixed - White and Asian</td><td>Mixed - White and Asian</td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00004</td><td>101-00004</td><td>2025-10-15</td><td>101</td><td>1972-03-27</td><td>53</td><td>YEARS</td><td>F</td><td>5</td><td>NOT HISPANIC OR LATINO</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>27-Mar-1972</td><td>Dr. James Wilson</td><td>Pacific Islander</td><td></td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00005</td><td>101-00005</td><td>2025-04-25</td><td>101</td><td>1960-07-18</td><td>64</td><td>YEARS</td><td>M</td><td>OTHER</td><td>NOT HISPANIC OR LATINO</td><td>PBO</td><td>Placebo</td><td>USA</td><td>18-Jul-1960</td><td>Dr. James Wilson</td><td>Hispanic</td><td>Hispanic</td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00006</td><td>101-00006</td><td>2025-09-15</td><td>101</td><td>1959-08-08</td><td>66</td><td>YEARS</td><td>F</td><td>OTHER</td><td>NOT HISPANIC OR LATINO</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>08-Aug-1959</td><td>Dr. James Wilson</td><td>North African</td><td></td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00007</td><td>101-00007</td><td>2025-04-04</td><td>101</td><td>1946-05-23</td><td>78</td><td>YEARS</td><td>M</td><td>OTHER</td><td>NOT HISPANIC OR LATINO</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>23-May-1946</td><td>Dr. James Wilson</td><td>South Asian Indian</td><td>South Asian Indian</td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00008</td><td>101-00008</td><td>2025-06-11</td><td>101</td><td>1952-09-11</td><td>72</td><td>YEARS</td><td>M</td><td>5</td><td>None</td><td>PBO</td><td>Placebo</td><td>USA</td><td>11-Sep-1952</td><td>Dr. James Wilson</td><td>Biracial</td><td></td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00009</td><td>101-00009</td><td>2025-04-02</td><td>101</td><td>1973-12-22</td><td>51</td><td>YEARS</td><td>F</td><td>OTHER</td><td>None</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>22-Dec-1973</td><td>Dr. James Wilson</td><td>Prefer not to say</td><td>Prefer not to say</td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00010</td><td>101-00010</td><td>2025-04-24</td><td>101</td><td>1963-11-30</td><td>61</td><td>YEARS</td><td>M</td><td>OTHER</td><td>HISPANIC OR LATINO</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>11/30/1963</td><td>Dr. James Wilson</td><td>Arab</td><td></td></tr></tbody></table></div><h4 style="margin:12px 0 6px;">QC Dataset (first 10 rows)</h4><div class="table-wrap"><table id="qc-dataset">
+<thead><tr><th onclick="sortTable('qc-dataset', 0)">STUDYID</th><th onclick="sortTable('qc-dataset', 1)">DOMAIN</th><th onclick="sortTable('qc-dataset', 2)">USUBJID</th><th onclick="sortTable('qc-dataset', 3)">SUBJID</th><th onclick="sortTable('qc-dataset', 4)">RFSTDTC</th><th onclick="sortTable('qc-dataset', 5)">SITEID</th><th onclick="sortTable('qc-dataset', 6)">BRTHDTC</th><th onclick="sortTable('qc-dataset', 7)">AGE</th><th onclick="sortTable('qc-dataset', 8)">AGEU</th><th onclick="sortTable('qc-dataset', 9)">SEX</th><th onclick="sortTable('qc-dataset', 10)">RACE</th><th onclick="sortTable('qc-dataset', 11)">ETHNIC</th><th onclick="sortTable('qc-dataset', 12)">ARMCD</th><th onclick="sortTable('qc-dataset', 13)">ARM</th><th onclick="sortTable('qc-dataset', 14)">COUNTRY</th><th onclick="sortTable('qc-dataset', 15)">BRTHDT</th><th onclick="sortTable('qc-dataset', 16)">INVNAM</th><th onclick="sortTable('qc-dataset', 17)">RACEOTH</th><th onclick="sortTable('qc-dataset', 18)">RACEO</th></tr></thead>
+<tbody><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00001</td><td>101-00001</td><td>2025-09-07</td><td>101</td><td>1954-09-04</td><td>71</td><td>YEARS</td><td>F</td><td>OTHER</td><td>UNKNOWN</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>04-Sep-1954</td><td>Dr. James Wilson</td><td>Filipino</td><td>Filipino</td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00002</td><td>101-00002</td><td>2025-07-18</td><td>101</td><td>1954-11-24</td><td>70</td><td>YEARS</td><td>M</td><td>OTHER</td><td>None</td><td>PBO</td><td>Placebo</td><td>USA</td><td>24-Nov-1954</td><td>Dr. James Wilson</td><td>Middle Eastern</td><td></td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00003</td><td>101-00003</td><td>2025-06-11</td><td>101</td><td>1948-06-05</td><td>77</td><td>YEARS</td><td>F</td><td>OTHER</td><td>HISPANIC OR LATINO</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>05-Jun-1948</td><td>Dr. James Wilson</td><td>Mixed - White and Asian</td><td>Mixed - White and Asian</td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00004</td><td>101-00004</td><td>2025-10-15</td><td>101</td><td>1972-03-27</td><td>53</td><td>YEARS</td><td>F</td><td>5</td><td>NOT HISPANIC OR LATINO</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>27-Mar-1972</td><td>Dr. James Wilson</td><td>Pacific Islander</td><td></td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00005</td><td>101-00005</td><td>2025-04-25</td><td>101</td><td>1960-07-18</td><td>64</td><td>YEARS</td><td>M</td><td>OTHER</td><td>NOT HISPANIC OR LATINO</td><td>PBO</td><td>Placebo</td><td>USA</td><td>18-Jul-1960</td><td>Dr. James Wilson</td><td>Hispanic</td><td>Hispanic</td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00006</td><td>101-00006</td><td>2025-09-15</td><td>101</td><td>1959-08-08</td><td>66</td><td>YEARS</td><td>F</td><td>OTHER</td><td>NOT HISPANIC OR LATINO</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>08-Aug-1959</td><td>Dr. James Wilson</td><td>North African</td><td></td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00007</td><td>101-00007</td><td>2025-04-04</td><td>101</td><td>1946-05-23</td><td>78</td><td>YEARS</td><td>M</td><td>OTHER</td><td>NOT HISPANIC OR LATINO</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>23-May-1946</td><td>Dr. James Wilson</td><td>South Asian Indian</td><td>South Asian Indian</td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00008</td><td>101-00008</td><td>2025-06-11</td><td>101</td><td>1952-09-11</td><td>72</td><td>YEARS</td><td>M</td><td>5</td><td>None</td><td>PBO</td><td>Placebo</td><td>USA</td><td>11-Sep-1952</td><td>Dr. James Wilson</td><td>Biracial</td><td></td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00009</td><td>101-00009</td><td>2025-04-02</td><td>101</td><td>1973-12-22</td><td>51</td><td>YEARS</td><td>F</td><td>OTHER</td><td>None</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>22-Dec-1973</td><td>Dr. James Wilson</td><td>Prefer not to say</td><td>Prefer not to say</td></tr><tr><td>XYZ-2026-001</td><td>DM</td><td>XYZ-2026-001-101-00010</td><td>101-00010</td><td>2025-04-24</td><td>101</td><td>1963-11-30</td><td>61</td><td>YEARS</td><td>M</td><td>OTHER</td><td>HISPANIC OR LATINO</td><td>TRT</td><td>Glucotrex 10mg</td><td>USA</td><td>11/30/1963</td><td>Dr. James Wilson</td><td>Arab</td><td></td></tr></tbody></table></div></div>
+</details><details class="section">
+  <summary>P21 Spec Sheet</summary>
+  <div class="section-body"><p class="placeholder">P21 spec sheet (p21_spec_sheet.xlsx) not available.</p></div>
+</details></div>
+</body>
+</html>

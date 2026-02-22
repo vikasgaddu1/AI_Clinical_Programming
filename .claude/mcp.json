@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "sdtm-tools": {
+      "command": "python",
+      "args": ["mcp_server.py"],
+      "cwd": "c:\\Users\\vikas\\OneDrive\\Documents\\AI_Clinical_Programming",
+      "description": "SDTM clinical programming tools — IG variable lookup, CT mappings, data profiling, function registry, spec reader"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+# R packages required for the SDTM R pipeline
+# Install in R with: install.packages(c("arrow", "haven"))
+
+# arrow  - write_parquet() / read_parquet()  — primary output format
+arrow
+
+# haven  - write_xpt() / read_xpt()          — regulatory XPT output (FDA submission)
+haven

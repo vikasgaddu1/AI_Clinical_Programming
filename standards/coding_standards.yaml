@@ -1,0 +1,77 @@
+# Company coding standards — enforced during R code generation
+#
+# Agents MUST read this before generating any R code.
+# Studies can override specific settings in studies/{study}/coding_standards.yaml.
+
+code_style:
+  case: "lowercase"                    # all R code in lowercase
+  indentation: 2                       # 2-space indent (R convention)
+  max_line_length: 120
+  comments:
+    required_sections:                 # every program must have these comment blocks
+      - "header"
+      - "load packages"
+      - "source functions"
+      - "read data"
+      - "processing"
+      - "output"
+    inline_comments: "required for non-obvious logic"
+
+variable_naming:
+  sdtm_variables: "UPPERCASE"          # STUDYID, USUBJID, BRTHDTC, etc.
+  adam_variables: "UPPERCASE"           # AVAL, PARAMCD, TRTA, etc.
+  r_local_variables: "snake_case"      # raw_dm, ct_path, suppdm_idx
+  r_functions: "snake_case"            # iso_date, derive_age, assign_ct
+
+function_reuse:
+  policy: "always_check_registry_first"
+  message: >
+    Before writing ANY new function or inline logic, check the function
+    registry (r_functions/function_registry.json). If a registered function
+    exists for the task, USE IT. Never duplicate functionality.
+
+program_header:
+  required: true
+  template_file: "standards/memory/program_header_template.txt"
+  default_author: "Production Programmer Agent (AI-generated)"
+  qc_author: "QC Programmer Agent (AI-generated)"
+  fields:
+    - "program_name"
+    - "description"
+    - "domain"
+    - "study_id"
+    - "author"
+    - "creation_date"
+    - "modification_history"
+    - "input_datasets"
+    - "output_datasets"
+    - "macros_used"
+
+modification_history:
+  policy: "required_on_every_update"
+  format: "# YYYY-MM-DD | author | description of change"
+
+# CDISC structural compliance rules
+cdisc_compliance:
+  sdtm:
+    max_variable_name_length: 8        # SAS transport (XPT) limit
+    max_label_length: 40               # SDTM IG label limit
+    max_text_length: 200               # max char variable length
+    required_sort_keys:
+      DM: ["STUDYID", "USUBJID"]
+      AE: ["STUDYID", "USUBJID", "AEDECOD", "AESTDTC"]
+      LB: ["STUDYID", "USUBJID", "LBTESTCD", "LBDTC"]
+      VS: ["STUDYID", "USUBJID", "VSTESTCD", "VSDTC"]
+      CM: ["STUDYID", "USUBJID", "CMTRT", "CMSTDTC"]
+      EX: ["STUDYID", "USUBJID", "EXTRT", "EXSTDTC"]
+      MH: ["STUDYID", "USUBJID", "MHTERM", "MHSTDTC"]
+    xpt_version: 5
+    controlled_terminology_version: "2024-12-20"
+  adam:
+    max_variable_name_length: 8
+    max_label_length: 40
+    required_variables:
+      - "STUDYID"
+      - "USUBJID"
+      - "PARAMCD"
+      - "AVAL"

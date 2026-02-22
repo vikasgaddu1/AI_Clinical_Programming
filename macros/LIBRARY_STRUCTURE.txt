@@ -1,0 +1,283 @@
+================================================================================
+SAS MACRO LIBRARY STRUCTURE - AI CLINICAL PROGRAMMING
+================================================================================
+
+LIBRARY PATH: /sessions/affectionate-awesome-johnson/mnt/AI_Clinical_Programming/macros
+
+================================================================================
+FILES IN LIBRARY
+================================================================================
+
+1. iso_date.sas
+   - Purpose: Convert non-standard date values to ISO 8601 (YYYY-MM-DD)
+   - Category: Date Handling
+   - Supported Input Formats: DD-MON-YYYY, MM/DD/YYYY, DD/MM/YYYY, DDMONYYYY
+   - Auto-detection: YES
+   - Output: Character variable in YYYY-MM-DD format
+   - Key Parameters: inds, outds, invar, outvar, infmt(optional)
+
+2. derive_age.sas
+   - Purpose: Calculate age in years from birth date and reference date
+   - Category: Demographic Derivations
+   - Algorithm: YRDIF function with 'ACTUAL' basis
+   - Output: Numeric age variable + optional character age unit variable
+   - Key Parameters: inds, outds, brthdt, refdt, agevar, ageuvar, create_ageu
+
+3. assign_ct.sas
+   - Purpose: Map raw data values to CDISC Controlled Terminology
+   - Category: Controlled Terminology Mapping
+   - Lookup File: ct_lookup.csv
+   - Supported Codelists: C66731 (SEX), C74457 (RACE), C66790 (ETHNICITY), C71113 (COUNTRY)
+   - Case-insensitive: YES (configurable)
+   - Unmapped Action: KEEP, MISSING, or FLAG (default)
+   - Key Parameters: inds, outds, invar, outvar, codelist, ctpath, unmapped
+
+4. ct_lookup.csv
+   - Purpose: CDISC Controlled Terminology Reference File
+   - Format: CSV with columns: CODELIST, CODELIST_NAME, RAW_VALUE, CT_VALUE, DESCRIPTION
+   - Codelists Included:
+     * C66731 (SEX): M, F, U
+     * C74457 (RACE): WHITE, BLACK OR AFRICAN AMERICAN, ASIAN, etc.
+     * C66790 (ETHNICITY): HISPANIC OR LATINO, NOT HISPANIC OR LATINO, etc.
+     * C71113 (COUNTRY): USA, CANADA, UNITED KINGDOM, MEXICO
+   - Extensible: Add new mappings as needed
+
+5. macro_registry.json *** KEY FILE FOR AI ORCHESTRATORS ***
+   - Purpose: Machine-readable registry of all macros in library
+   - Format: JSON with comprehensive metadata
+   - Used By: AI Orchestrators for macro discovery, selection, and execution
+   - Contents:
+     * Basic macro information (name, file, purpose, category)
+     * Complete parameter specifications (name, type, required, default, description)
+     * Usage examples with SAS code
+     * Dependency information for correct sequencing
+     * When-to-use guidance for decision logic
+     * Supported input/output types
+     * Error handling descriptions
+     * Orchestration integration guidelines
+   - Version: 1.0
+   - Last Updated: 2026-02-16
+
+6. README.md
+   - Comprehensive documentation for the entire library
+   - Sections:
+     * Overview of macro library
+     * Directory structure
+     * Overview of each macro with examples
+     * How the AI orchestrator uses the registry
+     * Orchestration process diagrams
+     * Machine-readable metadata explanation
+     * Usage instructions for orchestrators and programmers
+     * Best practices
+     * Registry extensibility guidelines
+
+7. LIBRARY_STRUCTURE.txt
+   - This file
+   - Quick reference guide
+
+================================================================================
+HOW THE AI ORCHESTRATOR USES THIS LIBRARY
+================================================================================
+
+PROCESS FLOW:
+
+  1. REGISTRY LOADING
+     └─→ Read macro_registry.json
+     └─→ Parse JSON to discover available macros
+     └─→ Extract metadata for each macro
+
+  2. INPUT ANALYSIS
+     └─→ Analyze source dataset structure
+     └─→ Identify variable names and types
+     └─→ List available variables
+
+  3. MACRO SELECTION
+     └─→ Match input variables to macro "when_to_use" criteria
+     └─→ Identify relevant macros
+     └─→ Example: Found RAW_BRTHDT → Select %iso_date
+     └─→ Example: Found RAW_SEX → Select %assign_ct
+
+  4. DEPENDENCY SEQUENCING
+     └─→ Read "dependencies" field from registry
+     └─→ Order macros correctly
+     └─→ Example: %iso_date BEFORE %derive_age
+     └─→ Build dependency DAG (directed acyclic graph)
+
+  5. PARAMETRIZATION
+     └─→ Read parameter specifications from registry
+     └─→ Extract required vs optional parameters
+     └─→ Apply default values
+     └─→ Map actual variable names to parameter names
+
+  6. SAS CODE GENERATION
+     └─→ Generate SAS code calling selected macros
+     └─→ Chain macro calls with proper dataset names
+     └─→ Pass parameters from registry metadata
+
+  7. EXECUTION & VALIDATION
+     └─→ Execute generated SAS code
+     └─→ Check SAS log for errors/warnings
+     └─→ Validate output datasets created
+     └─→ Return results to orchestrator
+
+================================================================================
+TYPICAL ORCHESTRATION SCENARIO: Transform Raw DM to SDTM
+================================================================================
+
+INPUT: Raw demographics dataset with columns:
+  - RAW_SEX (values: "M", "F", "MALE", "FEMALE", etc.)
+  - RAW_RACE (values: "White", "BLACK", "ASIAN", etc.)
+  - RAW_BRTHDT (values: "01-JAN-1990", "1990-01-01", "01/01/1990", etc.)
+  - RAW_RFSTDTC (values: "01/01/2020", "01-JAN-2020", etc.)
+
+ORCHESTRATOR LOGIC:
+
+  Step 1: Read Registry
+          └─→ Discover %iso_date, %derive_age, %assign_ct
+
+  Step 2: Analyze Input
+          └─→ RAW_BRTHDT → Convert to ISO 8601
+          └─→ RAW_RFSTDTC → Convert to ISO 8601
+          └─→ RAW_SEX → Map to CT
+          └─→ RAW_RACE → Map to CT
+
+  Step 3: Check Dependencies
+          └─→ %iso_date: No dependencies
+          └─→ %derive_age: Depends on %iso_date output
+          └─→ %assign_ct: No dependencies
+
+  Step 4: Sequence Macros
+          1. %iso_date on RAW_BRTHDT (no dependencies)
+          2. %iso_date on RAW_RFSTDTC (no dependencies)
+          3. %derive_age (depends on output from steps 1-2)
+          4. %assign_ct on RAW_SEX (no dependencies)
+          5. %assign_ct on RAW_RACE (no dependencies)
+
+  Step 5: Generate SAS Code
+          %iso_date(inds=raw.dm, outds=work.dm_step1, invar=RAW_BRTHDT, outvar=BRTHDTC);
+          %iso_date(inds=work.dm_step1, outds=work.dm_step2, invar=RAW_RFSTDTC, outvar=RFSTDTC);
+          %derive_age(inds=work.dm_step2, outds=work.dm_step3, brthdt=BRTHDTC, refdt=RFSTDTC, agevar=AGE);
+          %assign_ct(inds=work.dm_step3, outds=work.dm_step4, invar=RAW_SEX, outvar=SEX, codelist=C66731);
+          %assign_ct(inds=work.dm_step4, outds=work.dm_final, invar=RAW_RACE, outvar=RACE, codelist=C74457);
+
+  Step 6: Execute Code
+          └─→ SAS processes all 5 macro calls
+          └─→ Intermediate datasets created (work.dm_step1 through work.dm_step4)
+          └─→ Final output: work.dm_final with SDTM-compliant variables
+
+  OUTPUT: SDTM-compliant demographics dataset with:
+    - BRTHDTC: ISO 8601 birth date
+    - RFSTDTC: ISO 8601 reference start date
+    - AGE: Age in years (numeric)
+    - SEX: CDISC CT-mapped sex value
+    - RACE: CDISC CT-mapped race value
+
+================================================================================
+MACRO REGISTRY JSON CONTENTS
+================================================================================
+
+The macro_registry.json file contains:
+
+TOP-LEVEL:
+  - registry_version: "1.0"
+  - registry_date: "2026-02-16"
+  - description: Library description
+  - library_path: Full path to macro library
+  - macros: Array of macro entries
+
+MACRO ENTRY STRUCTURE:
+  - name: Macro name with % prefix
+  - file: SAS file containing the macro
+  - category: Categorization for grouping
+  - purpose: One-line purpose statement
+  - when_to_use: Array of use case descriptions
+  - parameters: Array of parameter specifications
+  - supported_input_formats: List of accepted formats (if applicable)
+  - output_type: Description of output
+  - output_characteristics: Array of output properties
+  - dependencies: Array of other macros this depends on
+  - lookup_file_structure: Schema for lookup files (if applicable)
+  - usage_examples: Array of example code with descriptions
+  - error_handling: Array of error handling behaviors
+  - notes: Array of implementation notes
+
+PARAMETER SPECIFICATION:
+  - name: Parameter name
+  - type: Data type (dataset name, variable name, format, option, flag, etc.)
+  - required: Boolean (true/false)
+  - default: Default value or "(auto-detect)" or "(none)"
+  - description: Parameter description
+  - example: Example value
+
+ORCHESTRATOR_INTEGRATION SECTION:
+  - registry_format: "JSON"
+  - how_to_use: Array of usage steps
+  - decision_logic: 5-7 step decision process
+  - example_orchestration_scenario: Full worked example
+
+================================================================================
+FOR AI ORCHESTRATORS: IMPLEMENTATION CHECKLIST
+================================================================================
+
+□ Load macro_registry.json using JSON parser
+□ Validate JSON structure and required fields
+□ Extract list of macros and their metadata
+□ For each available macro:
+  □ Store name, file path, and category
+  □ Store parameter list with metadata
+  □ Store dependencies and when_to_use criteria
+□ When processing a new dataset:
+  □ Analyze input dataset structure
+  □ Query registry to find matching macros
+  □ Check dependencies to order macro calls
+  □ Build parametrization for each macro
+  □ Generate SAS code
+  □ Execute SAS code
+  □ Validate outputs
+□ Handle errors from macro execution
+□ Log orchestration decisions
+□ Return final datasets to user
+
+================================================================================
+QUICK REFERENCE: MACRO SELECTION
+================================================================================
+
+WHEN YOU NEED TO...          USE THIS MACRO        REGISTRY LOOKUP
+─────────────────────────────────────────────────────────────────────────
+Convert dates                %iso_date             registry['macros'][0]
+Calculate age                %derive_age           registry['macros'][1]
+Map to CT values             %assign_ct            registry['macros'][2]
+Find SEX codes               ct_lookup.csv         codelist=C66731
+Find RACE codes              ct_lookup.csv         codelist=C74457
+Find ETHNICITY codes         ct_lookup.csv         codelist=C66790
+Find COUNTRY codes           ct_lookup.csv         codelist=C71113
+
+================================================================================
+FILES LOCATION
+================================================================================
+
+All files are located in:
+/sessions/affectionate-awesome-johnson/mnt/AI_Clinical_Programming/macros/
+
+  iso_date.sas
+  derive_age.sas
+  assign_ct.sas
+  ct_lookup.csv
+  macro_registry.json ← PRIMARY FILE FOR AI ORCHESTRATORS
+  README.md
+  LIBRARY_STRUCTURE.txt (this file)
+
+================================================================================
+VERSION & SUPPORT
+================================================================================
+
+Library Version: 1.0
+Release Date: 2026-02-16
+Status: Production Ready
+Last Updated: 2026-02-16
+
+For documentation: See README.md
+For AI orchestration: Use macro_registry.json
+For examples: See usage_examples in macro_registry.json
+
+================================================================================

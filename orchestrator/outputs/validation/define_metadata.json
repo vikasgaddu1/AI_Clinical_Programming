@@ -1,0 +1,97 @@
+{
+  "study_id": "XYZ-2026-001",
+  "domain": "DM",
+  "variables": [
+    {
+      "name": "COUNTRY",
+      "label": "COUNTRY",
+      "type": "Char",
+      "length": 20,
+      "codelist": null
+    },
+    {
+      "name": "ARM",
+      "label": "ARM",
+      "type": "Char",
+      "length": 20,
+      "codelist": null
+    },
+    {
+      "name": "ARMCD",
+      "label": "ARMCD",
+      "type": "Char",
+      "length": 20,
+      "codelist": null
+    },
+    {
+      "name": "SITEID",
+      "label": "SITEID",
+      "type": "Char",
+      "length": 20,
+      "codelist": null
+    },
+    {
+      "name": "SUBJID",
+      "label": "SUBJID",
+      "type": "Char",
+      "length": 20,
+      "codelist": null
+    },
+    {
+      "name": "DOMAIN",
+      "label": "DOMAIN",
+      "type": "Char",
+      "length": 20,
+      "codelist": null
+    },
+    {
+      "name": "STUDYID",
+      "label": "STUDYID",
+      "type": "Char",
+      "length": 20,
+      "codelist": null
+    },
+    {
+      "name": "BRTHDTC",
+      "label": "BRTHDTC",
+      "type": "Char",
+      "length": 60,
+      "codelist": null
+    },
+    {
+      "name": "RFSTDTC",
+      "label": "RFSTDTC",
+      "type": "Char",
+      "length": 60,
+      "codelist": null
+    },
+    {
+      "name": "AGE",
+      "label": "AGE",
+      "type": "Num",
+      "length": 8,
+      "codelist": null
+    },
+    {
+      "name": "SEX",
+      "label": "SEX",
+      "type": "Char",
+      "length": 60,
+      "codelist": "C66731"
+    },
+    {
+      "name": "RACE",
+      "label": "RACE",
+      "type": "Char",
+      "length": 60,
+      "codelist": "C74457"
+    },
+    {
+      "name": "ETHNIC",
+      "label": "ETHNIC",
+      "type": "Char",
+      "length": 60,
+      "codelist": null
+    }
+  ]
+}

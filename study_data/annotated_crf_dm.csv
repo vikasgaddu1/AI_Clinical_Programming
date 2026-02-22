@@ -1,0 +1,17 @@
+CRF Page,CRF Field Label,CRF Field Name,SDTM Domain,SDTM Variable,Annotation Notes
+Page 1: Subject Identification,Subject Number,SUBJID,DM,SUBJID,Unique identifier for subject within site
+Page 1: Subject Identification,Site Number,SITEID,DM,SITEID,Investigational site identifier
+Page 2: Demographics,Date of Birth,BRTHDT,DM,BRTHDTC,Subject birth date in ISO8601 format
+Page 2: Demographics,Age,AGE,DM,AGE,Age calculated as years from birth to informed consent
+Page 2: Demographics,Age Units,AGEU,DM,AGEU,Age unit - YEARS
+Page 2: Demographics,Sex,SEX,DM,SEX,"Biological sex: M=Male, F=Female; must be standardized"
+Page 2: Demographics,Race,RACE,DM,RACE,Race per CDISC terminology; may have missing values
+Page 2: Demographics,Ethnicity,ETHNIC,DM,ETHNIC,Ethnicity: HISPANIC OR LATINO / NOT HISPANIC OR LATINO
+Page 3: Study Enrollment,Informed Consent Date,RFSTDTC,DM,RFSTDTC,Reference start date (informed consent); establishes study day 1
+Page 3: Study Enrollment,Randomization Date,RNDTZN_DT,DM,RFENDTC,Reference end date; study termination date
+Page 3: Study Enrollment,Treatment Arm,ARMCD,DM,ARMCD,"Randomized treatment arm code: TRT=Active, PBO=Placebo"
+Page 3: Study Enrollment,Treatment Description,ARM,DM,ARM,Full description of randomized treatment
+Page 1: Subject Identification,Country,COUNTRY,DM,COUNTRY,Country ISO 3166-1 alpha-3 code
+Page 1: Subject Identification,Investigator Name,INVNAM,DM,INVNAM,Principal Investigator name
+System Generated,Record Creation Date,DMDTC,DM,DMDTC,Date/time when DM record was created
+Calculated,Study Day,DMDY,DM,DMDY,Study day relative to RFSTDTC; Day 1 = informed consent date

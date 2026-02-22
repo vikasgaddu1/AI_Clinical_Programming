@@ -1,0 +1,430 @@
+================================================================================
+SDTM IG RAG SYSTEM - FILE MANIFEST
+================================================================================
+
+Complete listing of all files in the project with descriptions, line counts,
+and dependencies.
+
+================================================================================
+DIRECTORY: /sessions/affectionate-awesome-johnson/mnt/AI_Clinical_Programming/sdtm_ig_db/
+================================================================================
+
+1. FILE: config.py
+   TYPE: Python source code
+   SIZE: 6.3 KB
+   LINES: ~250
+   PURPOSE: Centralized configuration management
+   DEPENDENCIES: os (built-in)
+   KEY COMPONENTS:
+     - DatabaseConfig class: PostgreSQL settings
+     - EmbeddingConfig class: Embedding model configuration
+     - ChunkingConfig class: Text chunking parameters
+     - QueryConfig class: Search parameters
+     - RAGConfig class: RAG-specific settings
+     - Config class: Unified configuration access
+     - validate_config() function: Configuration validation
+   ENVIRONMENT VARIABLES: 30+ configurable
+   USAGE: import Config; Config.db.HOST, Config.embeddings.MODEL, etc.
+   NOTES: All settings have sensible defaults; environment variables override
+
+2. FILE: setup_db.py
+   TYPE: Python source code
+   SIZE: 13 KB
+   LINES: ~480
+   PURPOSE: Create PostgreSQL database schema with pgvector extension
+   DEPENDENCIES: psycopg2, logging, config
+   KEY COMPONENTS:
+     - SDTMIGDatabase class: Database management
+     - create_database_if_not_exists() function: DB creation
+   METHODS:
+     - connect(): Establish database connection
+     - disconnect(): Close connection
+     - execute_query(): Execute SQL queries
+     - setup_extensions(): Install pgvector, uuid-ossp
+     - create_chunks_table(): Create sdtm_ig_chunks table
+     - create_controlled_terminology_table(): Create CT table
+     - create_mapping_assumptions_table(): Create assumptions table
+     - drop_schema(): Drop all tables (requires confirm=True)
+   EXECUTION: python setup_db.py
+   OUTPUT: Database schema creation logs
+   NOTES: Gracefully handles missing pgvector extension
+
+3. FILE: load_sdtm_ig.py
+   TYPE: Python source code
+   SIZE: 26 KB
+   LINES: ~850
+   PURPOSE: Load SDTM IG content from markdown files into database
+   DEPENDENCIES: psycopg2, logging, re (regex), pathlib, json, config
+   KEY COMPONENTS:
+     - TextChunker class: Intelligent text chunking
+     - ContentProcessor class: Metadata extraction
+     - EmbeddingGenerator class: Embedding generation
+     - SDTMIGLoader class: Main orchestrator
+   METHODS:
+     - chunk_by_sections(): Smart semantic chunking
+     - estimate_tokens(): Token count estimation
+     - generate(): Generate embeddings (mock/openai/claude)
+     - load_content_files(): Read markdown files
+     - chunk_content(): Chunk content with metadata
+     - load_chunks_to_db(): Load chunks with embeddings
+     - load_controlled_terminology(): Load CT data
+     - load_mapping_assumptions(): Load mapping rules
+     - load_all(): Complete load process
+   EXECUTION: python load_sdtm_ig.py
+   INPUT: Markdown files from sdtm_ig_content/ directory
+   OUTPUT: Chunks loaded to PostgreSQL
+   NOTES: Supports mock, OpenAI, and Claude embeddings
+
+4. FILE: query_ig.py
+   TYPE: Python source code
+   SIZE: 21 KB
+   LINES: ~780
+   PURPOSE: Query interface for retrieving SDTM IG guidance
+   DEPENDENCIES: psycopg2, logging, json, math, config
+   KEY COMPONENTS:
+     - SDTMIGQuery class: Main query interface
+   METHODS:
+     - connect(): Establish database connection
+     - disconnect(): Close connection
+     - semantic_search(): Find similar chunks
+     - get_variable_documentation(): Get complete variable info
+     - get_codelist_values(): Look up valid values
+     - get_mapping_assumptions(): Retrieve mapping rules
+     - get_domain_overview(): Get domain overview
+     - get_context_for_mapping(): Assemble context for AI (PRIMARY)
+   STATIC METHODS:
+     - cosine_similarity(): Calculate vector similarity
+     - parse_embedding(): Parse embedding from database
+   EXECUTION: python query_ig.py --examples (to run examples)
+   USAGE: from query_ig import SDTMIGQuery
+   NOTES: Primary interface for AI orchestrator integration
+
+5. FILE: orchestrator_example.py
+   TYPE: Python source code
+   SIZE: 17 KB
+   LINES: ~650
+   PURPOSE: Demonstrate AI orchestration with SDTM IG guidance
+   DEPENDENCIES: logging, typing, dataclass, json, query_ig, config
+   KEY COMPONENTS:
+     - MappingDecision dataclass: Decision result
+     - SDTMMappingOrchestrator class: Orchestration logic
+   METHODS:
+     - decide_sex_mapping(): Simple mapping example
+     - decide_race_mapping(): Complex mapping with alternatives
+     - decide_rfstdtc_derivation(): Derivation with approaches
+     - format_decision_report(): Format for human review
+     - demo_workflow(): Complete workflow example
+   EXECUTION: python orchestrator_example.py
+   OUTPUT: Decision reports with IG citations and alternatives
+   NOTES: Template for AI model integration (Claude/GPT-4)
+
+6. FILE: README.md
+   TYPE: Markdown documentation
+   SIZE: 22 KB
+   LINES: ~850
+   PURPOSE: Complete user and developer documentation
+   SECTIONS:
+     1. Architecture Overview (RAG pattern explanation)
+     2. Problem Statement (why RAG matters)
+     3. System Components (high-level overview)
+     4. Setup and Installation (step-by-step guide)
+     5. Database Schema (detailed table descriptions)
+     6. Loading Content (how to add IG content)
+     7. Querying the System (query function documentation)
+     8. Example Use Cases (real-world scenarios)
+     9. How AI Orchestrator Uses This System
+     10. Configuration Reference
+     11. Troubleshooting
+     12. Development Notes
+     13. Further Resources
+   TARGET AUDIENCE: Users, developers, and system integrators
+   USAGE: Read before using system; reference during implementation
+
+7. FILE: ARCHITECTURE.md
+   TYPE: Markdown documentation
+   SIZE: 17 KB
+   LINES: ~700
+   PURPOSE: Technical architecture documentation
+   SECTIONS:
+     1. Executive Summary
+     2. Problem Statement
+     3. System Architecture (detailed flow)
+     4. Database Design (schema and design rationale)
+     5. Content Chunking Strategy (algorithm details)
+     6. Embedding Strategy (mock vs. production)
+     7. Query Interface Documentation
+     8. AI Orchestrator Integration (detailed patterns)
+     9. Real-World Scenarios (worked examples)
+     10. Configuration and Deployment
+     11. Complete Workflow Example
+     12. Files and Components Summary
+     13. Future Enhancements
+   TARGET AUDIENCE: Technical architects and developers
+   USAGE: Reference for understanding system design decisions
+
+8. FILE: QUICKSTART.md
+   TYPE: Markdown documentation
+   SIZE: 9 KB
+   LINES: ~400
+   PURPOSE: 5-minute quick start guide
+   SECTIONS:
+     1. Prerequisites
+     2. Installation (5 steps, 5 minutes)
+     3. Basic Usage (5 code examples)
+     4. Common Tasks (recipe format)
+     5. Configuration
+     6. Troubleshooting
+     7. API Reference Quick Reference
+     8. Example Output
+     9. Next Steps
+   TARGET AUDIENCE: New users wanting quick setup
+   USAGE: Read for fastest setup; reference for common tasks
+
+9. FILE: PROJECT_SUMMARY.txt
+   TYPE: Text documentation
+   SIZE: 30 KB
+   LINES: ~1200
+   PURPOSE: Comprehensive project summary
+   CONTENTS:
+     - Project location and purpose
+     - Directory structure
+     - File descriptions (each file detailed)
+     - Key technologies
+     - Database schema (full specification)
+     - Sample data included
+     - Query capabilities
+     - RAG architecture flow
+     - Use cases demonstrated
+     - Integration points
+     - Deployment configurations
+     - Future enhancements
+     - How to use project
+     - Files and locations
+     - Key takeaways
+   TARGET AUDIENCE: Stakeholders, managers, technical leads
+   USAGE: Overview document for understanding full project scope
+
+10. FILE: FILE_MANIFEST.txt
+    TYPE: Text documentation
+    SIZE: This file
+    LINES: ~600
+    PURPOSE: Complete file inventory with descriptions
+    CONTENTS: This manifest listing all project files
+    TARGET AUDIENCE: Developers and system administrators
+    USAGE: Reference for understanding all project components
+
+11. FILE: .env.example
+    TYPE: Configuration template
+    SIZE: 1.6 KB
+    LINES: ~60
+    PURPOSE: Environment variable template
+    SECTIONS:
+      - PostgreSQL Database Configuration
+      - Embedding Model Configuration
+      - API Keys
+      - Text Chunking Configuration
+      - Query Configuration
+      - RAG Configuration
+      - Logging
+      - Development Settings
+    USAGE: Copy to .env and customize for your environment
+    NOTES: All values shown are training defaults
+
+12. FILE: requirements.txt
+    TYPE: Python requirements
+    SIZE: 1.2 KB
+    LINES: ~40
+    PURPOSE: Python package dependencies
+    CATEGORIES:
+      - Core Database: psycopg2-binary, psycopg2
+      - Embeddings: openai, anthropic (optional)
+      - Utilities: python-dotenv, requests
+      - Development: pytest, black, pylint, mypy
+      - Optional: numpy, pandas, sqlalchemy, jupyter, ipython
+    USAGE: pip install -r requirements.txt
+    NOTES: All packages tested and compatible
+
+================================================================================
+DIRECTORY: /sessions/affectionate-awesome-johnson/mnt/AI_Clinical_Programming/sdtm_ig_db/sdtm_ig_content/
+================================================================================
+
+13. FILE: dm_domain.md
+    TYPE: Markdown content
+    SIZE: 22 KB
+    LINES: ~850
+    PURPOSE: SDTM Implementation Guide content for Demographics (DM) domain
+    SECTIONS:
+      1. DM Domain Overview and Purpose
+      2. Core DM Variables (27 variables total):
+         - STUDYID, DOMAIN, USUBJID, SUBJID
+         - RFSTDTC, RFENDTC, RFXSTDTC, RFXENDTC, RFICDTC, RFPENDTC
+         - DTHDTC, DTHFL
+         - SITEID, INVID, INVNAM
+         - BRTHDTC, AGE, AGEU
+         - SEX, RACE, ETHNIC
+         - ARMCD, ARM, ACTARMCD, ACTARM
+         - COUNTRY, DMDTC, DMDY
+      3. Variable Definitions (each includes):
+         - Format and controlled terminology
+         - Detailed definition
+         - Assumptions and rules
+         - Multiple valid approaches (where applicable)
+         - Examples and usage guidance
+      4. Summary Table of DM Variables
+      5. IG Cross-References
+    CONTENT FEATURES:
+      - 3 approaches for RFSTDTC derivation
+      - 3 approaches for RACE mapping
+      - Multiple approaches for date imputation
+      - Multiple approaches for SEX determination
+      - SUPPDM guidance for supplemental variables
+      - ISO 8601 date format specifications
+      - Character vs. numeric variable rules
+    USAGE: Content source for loading into database
+    NOTES: Realistic CDISC IG content for training/demonstration
+
+14. FILE: general_assumptions.md
+    TYPE: Markdown content
+    SIZE: 17 KB
+    LINES: ~700
+    PURPOSE: General SDTM assumptions and rules that apply cross-domain
+    SECTIONS:
+      1. Overview
+      2. ISO 8601 Date and Time Format Requirements
+      3. Character vs. Numeric Variable Rules
+      4. USUBJID (Unique Subject Identifier) Construction Rules
+      5. Controlled Terminology Application Rules
+      6. Handling of Missing Data
+      7. Cross-Domain Linking and Referential Integrity
+      8. Reference Variables (RF--) Rules
+      9. Assumptions vs. Derived Variables
+      10. Domain-Specific Exceptions
+      11. IG Cross-References
+    KEY TOPICS:
+      - Date format (YYYY-MM-DD, YYYY-MM-DDTHH:MM:SS)
+      - Partial date handling and imputation
+      - Study day calculation (DMDY, AEDY, etc.)
+      - Character variable formatting (left-aligned, case-sensitive)
+      - Numeric variable rules (no text, decimal point, negative allowed)
+      - USUBJID uniqueness validation
+      - Codelist application and version control
+      - NULL vs. empty string vs. special codes
+      - Parent-child domain relationships
+      - Sequence numbers and referential integrity
+    USAGE: Content source for loading into database
+    NOTES: Covers ~20 general assumptions with priority levels
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+TOTAL FILES: 14
+TOTAL SIZE: ~175 KB
+
+BREAKDOWN BY TYPE:
+  Python Code:        5 files, ~83 KB  (60%)
+  Documentation:      4 files, ~58 KB  (33%)
+  Configuration:      3 files, ~4  KB  (2%)
+  Content (Markdown): 2 files, ~39 KB  (22%)
+  
+BREAKDOWN BY PURPOSE:
+  Infrastructure:     5 files (config, setup, load, query, orchestrator)
+  Documentation:      4 files (README, ARCHITECTURE, QUICKSTART, SUMMARY)
+  Configuration:      3 files (.env, requirements, manifest)
+  Sample Content:     2 files (DM domain, general assumptions)
+
+================================================================================
+FILE DEPENDENCIES
+================================================================================
+
+setup_db.py
+  ├── config.py (imports Config)
+  └── psycopg2 (external)
+
+load_sdtm_ig.py
+  ├── config.py (imports Config)
+  ├── psycopg2 (external)
+  └── sdtm_ig_content/ (reads markdown files)
+
+query_ig.py
+  ├── config.py (imports Config)
+  └── psycopg2 (external)
+
+orchestrator_example.py
+  ├── query_ig.py (imports SDTMIGQuery)
+  ├── config.py (imports Config)
+  └── (imports would be to Claude/GPT-4 API in production)
+
+All Python files depend on:
+  - config.py (configuration)
+  - requirements.txt (external packages)
+  - PostgreSQL database (created by setup_db.py)
+
+================================================================================
+RECOMMENDED READING ORDER
+================================================================================
+
+FOR QUICK START (30 minutes):
+  1. QUICKSTART.md
+  2. requirements.txt + .env.example
+  3. Run: python setup_db.py
+  4. Run: python load_sdtm_ig.py
+  5. Run: python query_ig.py --examples
+
+FOR COMPLETE UNDERSTANDING (2-3 hours):
+  1. README.md (Overview)
+  2. ARCHITECTURE.md (Technical Design)
+  3. config.py (Understanding configuration)
+  4. query_ig.py (Query interface)
+  5. orchestrator_example.py (AI integration)
+  6. dm_domain.md (Sample content)
+
+FOR DEPLOYMENT (1 hour):
+  1. ARCHITECTURE.md (Deployment section)
+  2. config.py (Production settings)
+  3. setup_db.py (Database setup)
+  4. .env.example (Environment variables)
+  5. requirements.txt (Dependencies)
+
+FOR CONTENT EXTENSION (2-4 hours):
+  1. dm_domain.md (Study existing format)
+  2. general_assumptions.md (Study structure)
+  3. load_sdtm_ig.py (Understand chunking)
+  4. Create new markdown file in sdtm_ig_content/
+  5. Run: python load_sdtm_ig.py
+
+================================================================================
+PRODUCTION DEPLOYMENT CHECKLIST
+================================================================================
+
+BEFORE DEPLOYING:
+  [ ] Read ARCHITECTURE.md Deployment section
+  [ ] Verify PostgreSQL 12+ installed
+  [ ] Set up pgvector extension
+  [ ] Configure .env with production values
+  [ ] Set up OpenAI API key (if using production embeddings)
+  [ ] Create database user with proper permissions
+  [ ] Set up monitoring and logging
+  [ ] Backup strategy documented
+  [ ] Disaster recovery plan in place
+
+DURING DEPLOYMENT:
+  [ ] Run setup_db.py to create schema
+  [ ] Run load_sdtm_ig.py to load content
+  [ ] Run query_ig.py --examples to verify
+  [ ] Test connectivity with production database
+  [ ] Load production IG content
+  [ ] Verify all indexes created
+  [ ] Performance test queries
+
+AFTER DEPLOYMENT:
+  [ ] Document any customizations
+  [ ] Set up monitoring alerts
+  [ ] Create backup schedule
+  [ ] Document update procedures
+  [ ] Train users on system
+  [ ] Set up incident response plan
+
+================================================================================
+END OF MANIFEST
+================================================================================
